@@ -1,0 +1,399 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Tensorflow Large-Scale Machine Learning on Heterogeneous Distributed Systems | The Notes of HH</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="John Doe">
+    
+    <meta name="description" content="2015年google提出的一篇关于TensorFlow如何分布式训练的论文。
+Three passthe first pass列出
+
+标题、摘要、介绍标题：Tensorflow Large-Scale Machine Learning on Heterogeneous Distributed Sy">
+    
+    
+    
+    
+    <link rel="alternative" href="/Tinnypp/atom.xml" title="The Notes of HH" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/myLogo.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/myLogo.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.svg" alt="The Notes of HH" title="The Notes of HH"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="The Notes of HH">The Notes of HH</a></h1>
+				<h2 class="blog-motto">Hold Your Horse</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="https://hhwode.github.io/">首页</a></li>
+					
+						<li><a href="https://hhwode.github.io/archives">归档</a></li>
+					
+					<li>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2020/02/07/deeplearning/Tensorflow Large-Scale Machine Learning on Heterogeneous Distributed Systems/" title="Tensorflow Large-Scale Machine Learning on Heterogeneous Distributed Systems" itemprop="url">Tensorflow Large-Scale Machine Learning on Heterogeneous Distributed Systems</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2020-02-07T12:44:24.000Z" itemprop="datePublished">2020-02-07</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Three-pass"><span class="toc-number">1.</span> <span class="toc-text">Three pass</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#the-first-pass"><span class="toc-number">1.1.</span> <span class="toc-text">the first pass</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#the-second-pass"><span class="toc-number">1.2.</span> <span class="toc-text">the second pass</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#the-third-pass"><span class="toc-number">1.3.</span> <span class="toc-text">the third pass</span></a></li></ol></li></ol>
+		</div>
+		
+		<p>2015年google提出的一篇关于TensorFlow如何分布式训练的论文。</p>
+<h1 id="Three-pass"><a href="#Three-pass" class="headerlink" title="Three pass"></a>Three pass</h1><h2 id="the-first-pass"><a href="#the-first-pass" class="headerlink" title="the first pass"></a>the first pass</h2><p><strong>列出</strong></p>
+<ol>
+<li>标题、摘要、介绍<br>标题：Tensorflow Large-Scale Machine Learning on Heterogeneous Distributed Systems，TensorFlow做分布式，分布式涉及：多台机器如何通信，梯度如何汇总<br>摘要：介绍工具（TensorFlow一个接口，用于机器学习算法的实现），存在什么问题，现有方法如何解决，能否解决，本文提出什么解决方法，结果是什么<br>介绍：主要是一些背景知识，</li>
+<li>章节标题<blockquote>
+<p>Programming Model and Basic Concepts: Operations and Kernels, Sessions, Variables<br>Implementation: Devices, Tensors, Single-Device Execution, Multi-Device Execution, Node Placement, Cross-Device Communication, Distributed Execution, Fault Tolerance<br>Extensions: Gradient Computation, Partial Execution, Device Constraints, Control Flow, Input Operations, Queues, Containers<br>Optimizations: Common Subexpression Elimination, Controlling Data Communication and Memory Usage, Asynchronous Kernels, Optimized Libraries for Kernel Implementations, Lossy Compression<br>Status and Experience<br>Common Programming Idioms: <strong>Data Parallel Training, Model Parallel Training, Concurrent Steps for Model Computation Pipelining</strong><br>Performance<br>Tools: Tensorboard: Visualization of graph structures and summary statistics, Performance Tracing<br>Future work<br>Related Work</p>
+</blockquote>
+</li>
+<li>数学原理<br>技术性，无数学部分</li>
+<li>结论<br>描述了一个数据流处理框架TensorFlow，并且开源</li>
+<li>相关文献<br>1、Theano: A CPU and GPU math expression compiler. In Proceedings of the Python for scientific computing conference (SciPy), volume 4, page 3. Austin, TX, 2010.<br>2、<a href="http://x86.cs.duke.edu/courses/fall13/cps296.4/838-CloudPapers/FlumeJava.pdf" target="_blank" rel="noopener">FlumeJava: easy, effi-cient data-parallel pipelines</a>. In ACM Sigplan Notices, volume 45, pages 363–375. ACM, 2010.<br>3、<a href="https://arxiv.org/pdf/1410.0759.pdf" target="_blank" rel="noopener">cuDNN: Efficient primitives for deep learning</a>. arXiv preprint arXiv:1410.0759, 2014.<br>4、<a href="http://www.cs.otago.ac.nz/cosc440/readings/osdi14-paper-chilimbi.pdf" target="_blank" rel="noopener">Project Adam: Building an efficient and scalable deep learning training system</a>. In 11th USENIX Symposium on Operating Systems Design and Implementation (OSDI 14), pages 571–582, 2014.<br>5、Torch: A modular machine learning software library. Technical report, IDIAP, 2002.<br>6、<a href="http://ai.stanford.edu/~ang/papers-tofile/large_deep_networks_nips2012.pdf" target="_blank" rel="noopener">Large scale distributed deep networks</a>. In NIPS, 2012.<br>7、<a href="http://its.kpi.ua/itm/lgloba/discipline/%D0%A0%D0%BE%D0%B7%D1%80%D0%BE%D0%B1%D0%BA%D0%B0%20%D1%96%D0%BD%D1%84%D0%BE%D1%80%D0%BC%D0%B0%D1%86%D1%96%D0%B9%D0%BD%D0%B8%D1%85%20%D1%80%D0%B5%D1%81%D1%83%D1%80%D1%81%D1%96%D0%B2%20%D1%82%D0%B0%20%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC/Dryad.pdf" target="_blank" rel="noopener">Dryad: distributed data-parallel programs from sequential building blocks</a>. In ACM SIGOPS Operating Systems Review, volume 41, pages 59–72. ACM, 2007.<br>8、<a href="https://arxiv.org/pdf/1408.5093.pdf" target="_blank" rel="noopener">Caffe: Convolutional architecture for fast feature embedding</a>. In Proceedings of the ACM International Conference on Multimedia, pages 675–678. ACM, 2014.<br>9、Large-scale video classification with convolutional neural networks. In Computer Vision and Pattern Recognition (CVPR), 2014 IEEE Conference on, pages 1725–1732. IEEE, 2014.<br>10、<a href="http://de.arxiv.org/pdf/1404.5997" target="_blank" rel="noopener">One weird trick for parallelizing convolutional neural networks</a>. arXiv preprint arXiv:1404.5997, 2014<br>11、<a href="https://people.eecs.berkeley.edu/~istoica/classes/cs294/15/notes/04-naiad.pdf" target="_blank" rel="noopener">Naiad: a timely dataflow system</a>. In Proceedings of the TwentyFourth ACM Symposium on Operating Systems Principles, pages 439–455. ACM, 2013.<br>12、<a href="https://wwwdb.inf.tu-dresden.de/wp-content/uploads/sose2017-hs5-2.pdf" target="_blank" rel="noopener">Ciel: a universal execution engine for distributed data-flow computing</a>. In Proceedings of the Ninth USENIX Symposium on Networked Systems Design and Implementation, 2011.<br>13、<a href="http://people.csail.mit.edu/fredo/tmp/Halide-5min.pdf" target="_blank" rel="noopener">Halide: A language and compiler for optimizing parallelism, locality, and recomputation in image processing pipelines</a>. ACM SIGPLAN Notices, 48(6):519– 530, 2013.<br>14、<a href="https://arxiv.org/pdf/1106.5730.pdf" target="_blank" rel="noopener">Hogwild: A lock-free approach to parallelizing stochastic gradient descent</a>. In Advances in Neural Information Processing Systems, pages 693–701, 2011.<br>15、<a href="https://chainer.org/" target="_blank" rel="noopener">Chainer: A powerful, flexible and intuitive framework of neural networks</a><br>16、<a href="http://pdfs.semanticscholar.org/3fc6/8a68225edce1635bc32054c1425db287fba3.pdf" target="_blank" rel="noopener">An introduction to computational networks and the computational network toolkit</a>. Technical report, Tech. Rep. MSR, Microsoft Research, 2014, 2014.</li>
+</ol>
+<p><strong>回答</strong></p>
+<ol>
+<li><p>论文类型<br>技术的描述，探讨</p>
+</li>
+<li><p>上下文关联</p>
+</li>
+<li><p>正确性</p>
+</li>
+<li><p>贡献点<br>开源深度学习库TensorFlow，避免重复性工作，也算是给定了实现标准</p>
+</li>
+<li><p>条理<br>清晰，语句简单，阅读不难</p>
+</li>
+<li><p>是否继续阅读<br>TensorFlow开源库的介绍，组成，如何使用，分布式使用，可视化模型结构，追踪模型通信（这就是TensorFlow的timeline）<br>分布式部分、追踪通信可以阅读，其他不建议，想学TensorFlow直接上官网</p>
+</li>
+</ol>
+<h2 id="the-second-pass"><a href="#the-second-pass" class="headerlink" title="the second pass"></a>the second pass</h2><p><strong>图</strong><br>数据并行与模型并行这个概念在TensorFlow这篇论文就提到，不知道最新提出是谁</p>
+<ol>
+<li><p>数据并行：概念比较简单，就是不同的设备计算前向和后向用的数据不同，以达到快速遍历一遍训练样本，通常是将数据分割，每个设备加载自己独有的一份数据<br>依据不同更新模型方式有同步和异步更新<br><img src="/images/tensorflow-0207/1.png" alt="" title="1"></p>
+</li>
+<li><p>模型并行：将模型参数拆分，不同设备有模型的不同层参数，依赖模型参数的前后顺序，对设备的利用率不高，因为设备要串行执行前向和反向<br><img src="/images/tensorflow-0207/2.png" alt="" title="2"></p>
+</li>
+<li><p>利用Linux内核的ftrace和CUPTI等工具统计的日志构成的cpu之间通信情况，这个图用处是用于分析训练耗时与设备使用情况，不清楚能否重现这个或有其他工具替代<br><img src="/images/tensorflow-0207/3.png" alt="" title="3"></p>
+</li>
+<li><p>GPU和CPU的情况，EEG只是说收集和可视化计算图的工具，又与tensorboard不一样<br><img src="/images/tensorflow-0207/4.png" alt="" title="4"></p>
+</li>
+<li><p>这张图给了一个timeline表示，这也就是最初的TensorFlow timeline<br><img src="/images/tensorflow-0207/5.png" alt="" title="5"></p>
+</li>
+</ol>
+<h2 id="the-third-pass"><a href="#the-third-pass" class="headerlink" title="the third pass"></a>the third pass</h2><p>重现</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/article/">article</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/deeplearning/">deeplearning</a>►<a class="article-category-link" href="/categories/deeplearning/tensorflow/">tensorflow</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://hhwode.github.io/2020/02/07/deeplearning/Tensorflow%20Large-Scale%20Machine%20Learning%20on%20Heterogeneous%20Distributed%20Systems/" data-title="Tensorflow Large-Scale Machine Learning on Heterogeneous Distributed Systems | The Notes of HH" data-tsina="" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2020/02/08/deeplearning/Large Scale Distributed Deep Network/" title="Large Scale Distributed Deep Networks">
+  <strong>新一篇:</strong><br/>
+  <span>
+  Large Scale Distributed Deep Networks</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2020/02/07/hvd/Timeline/"  title="Timeline">
+ <strong>旧一篇:</strong><br/> 
+ <span>Timeline
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="Tensorflow Large-Scale Machine Learning on Heterogeneous Distributed Systems" data-thread-key="deeplearning/Tensorflow Large-Scale Machine Learning on Heterogeneous Distributed Systems" data-author-key="John Doe" data-url="https://hhwode.github.io/post/deeplearning/Tensorflow Large-Scale Machine Learning on Heterogeneous Distributed Systems"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo" target="_blank" rel="noopener">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp" target="_blank" rel="noopener">Tinnypp</a>.</span>
+		
+			<span>© HH</span>
+		
+	<div>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"tinnypp"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

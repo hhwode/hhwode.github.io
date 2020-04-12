@@ -1,0 +1,396 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>vm虚拟机 | The Notes of HH</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="John Doe">
+    
+    <meta name="description" content="修改hostname
+适用于网络中，此时需要修改配置文件   vim  /etc/sysconfig/network
+1HOSTNAME&amp;#x3D;master
+修改host文件
+
+用命令：hostnamectl set-hostname {newhost-name}
+
+编辑配置文件：vim  /e">
+    
+    
+    
+    
+    <link rel="alternative" href="/Tinnypp/atom.xml" title="The Notes of HH" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/myLogo.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/myLogo.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.svg" alt="The Notes of HH" title="The Notes of HH"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="The Notes of HH">The Notes of HH</a></h1>
+				<h2 class="blog-motto">Hold Your Horse</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="https://hhwode.github.io/">首页</a></li>
+					
+						<li><a href="https://hhwode.github.io/archives">归档</a></li>
+					
+					<li>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2020/02/19/vm/" title="vm虚拟机" itemprop="url">vm虚拟机</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2020-02-19T12:44:24.000Z" itemprop="datePublished">2020-02-19</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#修改hostname"><span class="toc-number">1.</span> <span class="toc-text">修改hostname</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#克隆Linux修改网络"><span class="toc-number">2.</span> <span class="toc-text">克隆Linux修改网络</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#防火墙"><span class="toc-number">3.</span> <span class="toc-text">防火墙</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#linux清理缓存"><span class="toc-number">4.</span> <span class="toc-text">linux清理缓存</span></a></li></ol>
+		</div>
+		
+		<h1 id="修改hostname"><a href="#修改hostname" class="headerlink" title="修改hostname"></a>修改hostname</h1><ol>
+<li><p>适用于网络中，此时需要修改配置文件   vim  /etc/sysconfig/network</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">HOSTNAME&#x3D;master</span><br></pre></td></tr></table></figure></li>
+<li><p>修改host文件</p>
+</li>
+<li><p>用命令：<code>hostnamectl set-hostname {newhost-name}</code></p>
+</li>
+<li><p>编辑配置文件：vim  /etc/hostname  将里面的值替换</p>
+</li>
+</ol>
+<p>以上方式都必须重启才能生效</p>
+<h1 id="克隆Linux修改网络"><a href="#克隆Linux修改网络" class="headerlink" title="克隆Linux修改网络"></a>克隆Linux修改网络</h1><p>重启网卡提示Bringing up interface eth0:  Device eth0 does not seem to be present,delaying initialization.                    [FAILED]:</p>
+<ol>
+<li>因为克隆的机器没有正确的mac,UUID信息冲突导致的，首先将/etc/udev/rules.d/70-persistent-net.rules文件清空或删除</li>
+<li>然后将网卡配置文件/etc/sysconfig/network-scripts/ifcfg-eth0的uuid和hwaddr这两行删除<br>网卡名ifcfg-eth0可修改，但文件名与文件内容需一致</li>
+<li>vim /etc/sysconfig/network-scripts/ifcfg-eth0  （这里的网卡名称根据自己的网卡名称来写）#增加一条  <code>ARPCHECK=no</code></li>
+<li>重启网卡就能正常重启网络了：<br><code>/etc/init.d/network restart</code><br><code>service network restart</code><br><code>systemctl start network.service</code><ul>
+<li>1.service命令<br>service命令其实是去/etc/init.d目录下，去执行相关程序<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># service命令启动redis脚本</span><br><span class="line">service redis start</span><br><span class="line"># 直接启动redis脚本</span><br><span class="line">&#x2F;etc&#x2F;init.d&#x2F;redis start</span><br><span class="line"># 开机自启动</span><br><span class="line">update-rc.d redis defaults</span><br><span class="line">其中脚本需要我们自己编写</span><br></pre></td></tr></table></figure></li>
+<li>2.systemctl命令<br>systemd是Linux系统最新的初始化系统(init),作用是提高系统的启动速度，尽可能启动较少的进程，尽可能更多进程并发启动。systemd对应的进程管理命令是systemctl</li>
+</ul>
+</li>
+</ol>
+<h1 id="防火墙"><a href="#防火墙" class="headerlink" title="防火墙"></a>防火墙</h1><ol>
+<li>查看所有服务：<code>systemctl list-unit-files|grep enabled</code></li>
+<li>禁用防火墙：<code>systemctl stop firewalld.service</code>, <code>systemctl disable firewalld.service</code></li>
+<li>查看防火墙状态：<code>systemctl status firewalld.service</code></li>
+</ol>
+<p>启动一个服务：systemctl start firewalld.service<br>关闭一个服务：systemctl stop firewalld.service<br>重启一个服务：systemctl restart firewalld.service<br>显示一个服务的状态：systemctl status firewalld.service<br>在开机时启用一个服务：systemctl enable firewalld.service<br>在开机时禁用一个服务：systemctl disable firewalld.service<br>查看服务是否开机启动：systemctl is-enabled firewalld.service;echo $?<br>查看已启动的服务列表：systemctl list-unit-files|grep enabled</p>
+<h1 id="linux清理缓存"><a href="#linux清理缓存" class="headerlink" title="linux清理缓存"></a>linux清理缓存</h1><p><code>free -m</code>查看内存使用情况，sysctl 命令可以临时改变某个系统参数  如：sysctl -w net.ipv4.ip_forward=1 是将forware参数临时改为1 当 service network restart后 失效.<br>清理步骤：</p>
+<ol>
+<li><code>sync</code>：因为系统在操作的过程当中，会把你的操作到的文件资料先保存到buffer中去，因为怕你在操作的过程中因为断电等原因遗失数据，所以在你操作过程中会把文件资料先缓存。所以我们在清理缓存先要先把buffe中的数据先写入到硬盘中，sync命令</li>
+<li><code>echo {num}</code>：echo 3 是清理所有缓存；echo 0 是不释放缓存；echo 1 是释放页缓存；ehco 2 是释放dentries和inodes缓存；echo 3 是释放 1 和 2 中说道的的所有缓存<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># sync</span><br><span class="line"># echo 3 &gt; &#x2F;proc&#x2F;sys&#x2F;vm&#x2F;drop_caches</span><br></pre></td></tr></table></figure></li>
+<li>Linux清除ARP缓存<br>一、 <code>arp -n|awk &#39;/^[1-9]/ {print &quot;arp -d &quot;$1}&#39; | sh</code><br>清除所有ARP缓存，推荐！<br>二、<code>for((ip=2;ip&lt;255;ip++));do arp -d 192.168.0.$ip &amp;&gt;/dev/null;done</code><br>清除192.168.0.0网段的所有缓存<br>三、<code>arp -d IP</code><br>这样可以清除单一IP 的ARP缓存<br>注意：以上均需要root权限，尤其是最后一个，如果不再root下执行，则改为：<br><code>arp -n|awk &#39;/^[1-9]/ {print &quot;arp -d &quot;$1}&#39; | sudo sh</code></li>
+</ol>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/install/">install</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/deeplearning/">deeplearning</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://hhwode.github.io/2020/02/19/vm/" data-title="vm虚拟机 | The Notes of HH" data-tsina="" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2020/02/19/hvd/Horovod_question/" title="Horovod 框架使用问题集">
+  <strong>新一篇:</strong><br/>
+  <span>
+  Horovod 框架使用问题集</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2020/02/18/deeplearning/mxnet/"  title="mxnet">
+ <strong>旧一篇:</strong><br/> 
+ <span>mxnet
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="vm虚拟机" data-thread-key="vm" data-author-key="John Doe" data-url="https://hhwode.github.io/post/vm"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo" target="_blank" rel="noopener">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp" target="_blank" rel="noopener">Tinnypp</a>.</span>
+		
+			<span>© HH</span>
+		
+	<div>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"tinnypp"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

@@ -1,0 +1,410 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>程序员的数学 | The Notes of HH</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="John Doe">
+    
+    <meta name="description" content="开词篇
+为什么要学习数学
+
+导读
+如何学数学 刘超《趣谈网络协议》
+
+学一门技术三个阶段：
+怎么使用
+如何实现、原理是什么
+为什么这么实现
+
+徐文浩 bothub.ai
+学好数学有机会重另一个角度去认识理解程序和问题解决方案
+
+王天一《人工智能基础课》
+数学是工具而非问题，是手段而非目的
+
+用多少学">
+    
+    
+    
+    
+    <link rel="alternative" href="/Tinnypp/atom.xml" title="The Notes of HH" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/myLogo.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/myLogo.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.svg" alt="The Notes of HH" title="The Notes of HH"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="The Notes of HH">The Notes of HH</a></h1>
+				<h2 class="blog-motto">Hold Your Horse</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="https://hhwode.github.io/">首页</a></li>
+					
+						<li><a href="https://hhwode.github.io/archives">归档</a></li>
+					
+					<li>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2020/02/20/程序员的数学/" title="程序员的数学" itemprop="url">程序员的数学</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2020-02-20T12:44:24.000Z" itemprop="datePublished">2020-02-20</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#开词篇"><span class="toc-number">1.</span> <span class="toc-text">开词篇</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#导读"><span class="toc-number">2.</span> <span class="toc-text">导读</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#基础思想篇"><span class="toc-number">3.</span> <span class="toc-text">基础思想篇</span></a></li></ol>
+		</div>
+		
+		<h1 id="开词篇"><a href="#开词篇" class="headerlink" title="开词篇"></a>开词篇</h1><ol>
+<li>为什么要学习数学</li>
+</ol>
+<h1 id="导读"><a href="#导读" class="headerlink" title="导读"></a>导读</h1><ol>
+<li>如何学数学<br> 刘超《趣谈网络协议》</li>
+</ol>
+<pre><code>学一门技术三个阶段：
+怎么使用
+如何实现、原理是什么
+为什么这么实现
+
+徐文浩 bothub.ai
+学好数学有机会重另一个角度去认识理解程序和问题解决方案
+
+王天一《人工智能基础课》
+数学是工具而非问题，是手段而非目的
+
+用多少学多少
+理解数学本质，通过合理设计简化物理学的研究
+数学绝不仅仅是算术，把主要精力放在计算上未免因小失大
+
+把握数学的工具属性，学习具体方法时先溯因再求果，勤于思考解决相同问题的不同方法，与解决不同问题的相同方法之间的联系与区别
+
+“这个世界没有一天是无聊的，只不过是你懒惰已久的感官无法发现眼前事物的乐趣而已”。</code></pre><h1 id="基础思想篇"><a href="#基础思想篇" class="headerlink" title="基础思想篇"></a>基础思想篇</h1><ol>
+<li><p>二进制<br> 组成计算机系统的逻辑电路通常只有两个状态，即开关的接通与断开</p>
+</li>
+<li><p>余数：原来取余操作本身就是个哈希函数<br> 余数总是在一个固定的范围内<br> 假如今天是周日，想知道从今天开始的50天后是星期几，那么用50除以7余1，只需要在今天星期几加上1就是50天后的星期几<br> 同余定理：用于分类</p>
+</li>
+<li><p>迭代法：象棋从第一格放一粒，后面都是前面的一倍，<br> 二分查找：有点类似猜数字</p>
+</li>
+<li><p>数学归纳法：归纳从经验事实中找出普遍特征的认知方法<br> 步骤：<br> 1、证明基本情况（通常<code>n=1</code>时）是否成立<br> 2、假设<code>n=k-1</code>成立，证明<code>n=k</code>也成立（k为任意大于1的自然数）</p>
+</li>
+<li><p>递归：复杂问题简单化</p>
+<ul>
+<li>在限定总和的情况下，求所有可能得加和方式<br>递推关系：<br>  1、假设n=k-1时，问题已解决，那么只要求解n=k的时候，问题如何解决<br>  2、初始状态，就是n=1的时候，问题如何解决</li>
+</ul>
+</li>
+</ol>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/introduce/">introduce</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/math/">math</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://hhwode.github.io/2020/02/20/%E7%A8%8B%E5%BA%8F%E5%91%98%E7%9A%84%E6%95%B0%E5%AD%A6/" data-title="程序员的数学 | The Notes of HH" data-tsina="" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2020/02/21/hpc/DeepSpeed/" title="DeepSpeed">
+  <strong>新一篇:</strong><br/>
+  <span>
+  DeepSpeed</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2020/02/20/hpc/GPipe Efficient Training of Giant Neural Networks using Pipeline Parallelism/"  title="GPipe Efficient Training of Giant Neural Networks using Pipeline Parallelism">
+ <strong>旧一篇:</strong><br/> 
+ <span>GPipe Efficient Training of Giant Neural Networks using Pipeline Parallelism
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="程序员的数学" data-thread-key="程序员的数学" data-author-key="John Doe" data-url="https://hhwode.github.io/post/程序员的数学"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo" target="_blank" rel="noopener">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp" target="_blank" rel="noopener">Tinnypp</a>.</span>
+		
+			<span>© HH</span>
+		
+	<div>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"tinnypp"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

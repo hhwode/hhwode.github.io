@@ -1,0 +1,417 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>ArcFace_Additive Angular Margin Loss for Deep Face Recognition | The Notes of HH</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="John Doe">
+    
+    <meta name="description" content="2019年
+Three Passfirst列出：
+1. 标题、摘要、介绍
+
+- 标题：ArcFace： Additive Angular Margin Loss for Deep Face Recognition，使用附加角度间隔的损失来进行深度人脸识别，从损失来进行改进是最近几年比较流行的一种人脸">
+    
+    
+    
+    
+    <link rel="alternative" href="/Tinnypp/atom.xml" title="The Notes of HH" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/myLogo.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/myLogo.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.svg" alt="The Notes of HH" title="The Notes of HH"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="The Notes of HH">The Notes of HH</a></h1>
+				<h2 class="blog-motto">Hold Your Horse</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="https://hhwode.github.io/">首页</a></li>
+					
+						<li><a href="https://hhwode.github.io/archives">归档</a></li>
+					
+					<li>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2020/03/04/face/ArcFace_Additive Angular Margin Loss for Deep Face Recognition/" title="ArcFace_Additive Angular Margin Loss for Deep Face Recognition" itemprop="url">ArcFace_Additive Angular Margin Loss for Deep Face Recognition</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2020-03-03T16:00:00.000Z" itemprop="datePublished">2020-03-04</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Three-Pass"><span class="toc-number">1.</span> <span class="toc-text">Three Pass</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#first"><span class="toc-number">1.1.</span> <span class="toc-text">first</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#second"><span class="toc-number">1.2.</span> <span class="toc-text">second</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#third"><span class="toc-number">1.3.</span> <span class="toc-text">third</span></a></li></ol></li></ol>
+		</div>
+		
+		<p>2019年</p>
+<h1 id="Three-Pass"><a href="#Three-Pass" class="headerlink" title="Three Pass"></a>Three Pass</h1><h2 id="first"><a href="#first" class="headerlink" title="first"></a>first</h2><p><strong>列出</strong>：</p>
+<pre><code>1. 标题、摘要、介绍
+
+- 标题：ArcFace： Additive Angular Margin Loss for Deep Face Recognition，使用附加角度间隔的损失来进行深度人脸识别，从损失来进行改进是最近几年比较流行的一种人脸识别的方法。
+
+- 摘要：深度学习我们可以考虑到最后一层全连接层是一种特征提取的方式，之后有些进行分类的都是基于loss来设定的，比如softmax就是看对应位置哪个输出概率最大，所以前面NN层都是用于特征提取，没有多大修改空间，最终起决定作用的还是loss，**只要能定义一种合适的loss function，就可以提高区分效果。**
+
+  比较常见的loss function如下：
+
+  &gt; 1、Centre loss：该损失在欧式空间上弥补了NN提取的特征与对应类别的距离，实现了类内更加紧密。在一定程度上压缩了类内聚集。
+  &gt;
+  &gt; 2、SphereFace：
+
+  最近比较热门的研究方向是：
+
+  作者也从这个方向进行研究，提出ArcFace（Additive Angular Margin Loss）来获取更高区分度的特征，是基于弧面与超球面进行测试距离的方法，可以说几何解释比较清晰。
+
+  作者对比了超过10种人脸识别的基准实验，ArcFace在计算和性能上都具有优势，更难能可贵的是开源所有实验内容，以供重现。
+
+- 介绍：使用DCNN来提取脸部特征表示是人脸识别的一种方法。有些类似词向量，是不是。训练方式有两种：（**类内距离越小，类间距离越大**）
+
+  &gt; 1. 通过所有类别数据加在一起训练，使用softmax分类器，就是一种普通分类训练方法；1）缺点-全连接层的权重大小依据类别数线性增长。2）只能学到已有类别的数据，无法处理新类别。
+  &gt;
+  &gt;    改善方式：1）Centre loss
+  &gt;
+  &gt;    如softmax工作原理：
+  &gt;
+  &gt;    <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">只有三个类别，训练第三个类别数据：</span><br><span class="line">iter1 model-&gt;概率 [0.2, 0.2, 0.5]-&gt;完成训练</span><br></pre></td></tr></table></figure>
+  &gt;
+  &gt;    
+  &gt;
+  &gt; 2. 直接学习一个embedding特征，用于后续人脸聚类来进行人脸识别，但需要结合特定的loss，如triplet-loss-based；1）组合多，大数据量下需迭代多次。2）semi-hard sample不利于模型训练。
+  &gt;
+  &gt;    改善方式：1）Sphereface，2）CosFace，3）ArcFace
+  &gt;
+  &gt;    如CosFace工作原理：
+  &gt;
+  &gt;    <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">只有三个类别，训练第三个类别数据：</span><br><span class="line">iter1 model-&gt;概率 [0.2,0.2,0.5]-&gt;强化训练，类别概率减0.5-&gt;[0.2,0.2,0.0]-&gt;未完成继续训练</span><br><span class="line">iter2 model-&gt;概率 [0.2,0.2,0.8]-&gt;强化训练，类别概率减0.5-&gt;[0.2,0.2,0.3]-&gt;完成训练 </span><br></pre></td></tr></table></figure>
+  &gt;
+  &gt;    
+
+    这块介绍ArcFace的四个有点：Engaging、Effective、Easy、Efficient</code></pre><ol start="2">
+<li><p>章节</p>
+</li>
+<li><p>数学原理</p>
+</li>
+<li><p>结论</p>
+</li>
+<li><p>文献</p>
+</li>
+</ol>
+<p><strong>回答</strong>：</p>
+<pre><code>1. 论文类型
+ 2. 相关内容
+ 3. 正确性
+ 4. 贡献点
+ 5. 相关文献
+ 6. 是否继续</code></pre><h2 id="second"><a href="#second" class="headerlink" title="second"></a>second</h2><h2 id="third"><a href="#third" class="headerlink" title="third"></a>third</h2>  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/introduce/">introduce</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/deeplearning/">deeplearning</a>►<a class="article-category-link" href="/categories/deeplearning/face/">face</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://hhwode.github.io/2020/03/04/face/ArcFace_Additive%20Angular%20Margin%20Loss%20for%20Deep%20Face%20Recognition/" data-title="ArcFace_Additive Angular Margin Loss for Deep Face Recognition | The Notes of HH" data-tsina="" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2020/04/12/deeplearning/分布式深度学习训练/" title="deeplearning/分布式深度学习训练">
+  <strong>新一篇:</strong><br/>
+  <span>
+  deeplearning/分布式深度学习训练</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2020/03/03/deeplearning/pytorch_rpc/"  title="PyTorch RPC">
+ <strong>旧一篇:</strong><br/> 
+ <span>PyTorch RPC
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="ArcFace_Additive Angular Margin Loss for Deep Face Recognition" data-thread-key="face/ArcFace_Additive Angular Margin Loss for Deep Face Recognition" data-author-key="John Doe" data-url="https://hhwode.github.io/post/face/ArcFace_Additive Angular Margin Loss for Deep Face Recognition"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo" target="_blank" rel="noopener">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp" target="_blank" rel="noopener">Tinnypp</a>.</span>
+		
+			<span>© HH</span>
+		
+	<div>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"tinnypp"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

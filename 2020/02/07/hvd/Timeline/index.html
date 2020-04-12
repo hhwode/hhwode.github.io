@@ -1,0 +1,432 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Timeline | The Notes of HH</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="John Doe">
+    
+    <meta name="description" content="深度学习模型越来越大，数据越来越多，当训练慢时如何定位原因，考虑：通信，GPU占用，GPU利用率等原因其中timeline就是一个用于记录模型训练时每个operator耗时情况，主要关注哪部分在CPU上运行，哪部分在GPU运行，是否可以将CPU的放到GPU上，通过减少关键路径的耗时, 提升性能能结合">
+    
+    
+    
+    
+    <link rel="alternative" href="/Tinnypp/atom.xml" title="The Notes of HH" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/myLogo.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/myLogo.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.svg" alt="The Notes of HH" title="The Notes of HH"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="The Notes of HH">The Notes of HH</a></h1>
+				<h2 class="blog-motto">Hold Your Horse</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="https://hhwode.github.io/">首页</a></li>
+					
+						<li><a href="https://hhwode.github.io/archives">归档</a></li>
+					
+					<li>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2020/02/07/hvd/Timeline/" title="Timeline" itemprop="url">Timeline</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2020-02-07T12:44:24.000Z" itemprop="datePublished">2020-02-07</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Timeline介绍"><span class="toc-number">1.</span> <span class="toc-text">Timeline介绍</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#组成"><span class="toc-number">1.1.</span> <span class="toc-text">组成</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#一些概念"><span class="toc-number">1.2.</span> <span class="toc-text">一些概念</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#使用"><span class="toc-number">2.</span> <span class="toc-text">使用</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#TensorFlow纯CPU情况"><span class="toc-number">2.1.</span> <span class="toc-text">TensorFlow纯CPU情况</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#指定网络在GPU上"><span class="toc-number">2.2.</span> <span class="toc-text">指定网络在GPU上</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#CPU-GPU情况"><span class="toc-number">2.3.</span> <span class="toc-text">CPU+GPU情况</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#keras使用timeline"><span class="toc-number">3.</span> <span class="toc-text">keras使用timeline</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#horovod使用timeline"><span class="toc-number">4.</span> <span class="toc-text">horovod使用timeline</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#horovod-timeline"><span class="toc-number">4.1.</span> <span class="toc-text">horovod timeline</span></a></li></ol></li></ol>
+		</div>
+		
+		<p>深度学习模型越来越大，数据越来越多，当训练慢时如何定位原因，考虑：通信，GPU占用，GPU利用率等原因<br>其中timeline就是一个用于记录模型训练时每个operator耗时情况，主要关注哪部分在CPU上运行，哪部分在GPU运行，是否可以将CPU的放到GPU上，通过减少<strong>关键路径</strong>的耗时, 提升性能<br>能结合一个例子说明更好</p>
+<h1 id="Timeline介绍"><a href="#Timeline介绍" class="headerlink" title="Timeline介绍"></a>Timeline介绍</h1><p>本文只是对timeline的简单介绍与使用。<br>现在深度学习模型越来越大，数据越来越多，训练性能分析尤为重要，如何定位原因呢，可考虑几个几个方面：通信，GPU占用，GPU利用率；这些方面有对应的工具进行统计，如nvidia-smi， nmon。而TensorFlow有一个工具Timeline，horovod也集成了。<br>Timeline是一个用于记录模型训练时每个operator耗时情况，显示模型在CPU和GPU运行情况，通过Timeline分析减少关键路径的耗时, 可以提升性能。</p>
+<h2 id="组成"><a href="#组成" class="headerlink" title="组成"></a>组成</h2><p>Timeline网上介绍也少，只解释说是一种时间记录手段，TensorFlow主要还是通过Profile API来进行分析，其中Timeline就是Profile的一部分。一般只取一个epoch情况，不需要合并多个epoch情况。<br>加载情况，打开Chrome，在地址栏键入chrome://tracing/，通过load按钮导入 timeline.json 文件，就可以看到每个ops的运行时间和设备信息了。如下：<br><img src="/images/timeline/concept.png" alt="" title="concept"><br>MEMCPYHtoD operation操作，H代表Host，理解为cpu或者本机内存，D代表Device，这里表示GPU<br>GPU:0/stream  代表的是 cuda执行的时间，可以看到各个 operation是 有先后顺序的<br>以Grad结束的操作其实是梯度操作，最后梯度的流出方向是  apply 也就是把梯度应用到 参数变量上。</p>
+<p>View Options中的Flow events会将op的依赖关系用箭头显连接</p>
+<ol>
+<li>最顶端的左边Record、Save、Load是可操作按钮，右边View Options可显示ops的依赖过程，如图中中部的有箭头部分</li>
+<li>左边一栏的/device /gpu是CPU和GPU设备信息，具体分析如下：<br>1)/device:GPU:0/stream:all Compute (所有GPU花费总时间,GPU使用情况)<br>2)/gpu:0/context#0/stream#1:Kernel Compute(GPU计算情况)<br>3)/gpu:0/context#0/stream#2:MemcpyHtoD Compute(CPU拷贝数据到GPU计算情况)<br>4)/gpu:0/context#0/stream#3:MemcpyDtoH Compute(GPU拷贝数据到CPU计算情况)<br>5)/host:CPU Compute(CPU计算情况)<br>6)/job:localhost/replica:0/task:0/device:CPU:0 Compute(cpu使用情况)<br>7)/job:localhost/replica:0/task:0/device:GPU:0 Compute(cpu把任务发到gpu上)<br>2) , 3), 4)加起来就是1)的情况，但5)跟6)有什么区别，7)跟其他又有什么区别</li>
+<li>右边是对应ops在该设备下的运行时间</li>
+<li>点击一个ops，就会出现最下面部分，该ops的具体信息：名字、类型、输入输出、开始时间与持续时间等信息</li>
+<li>最右边的File Size Stats，Metrics待分析···</li>
+</ol>
+<h2 id="一些概念"><a href="#一些概念" class="headerlink" title="一些概念"></a>一些概念</h2><p>概念：</p>
+<ol>
+<li>/device:GPU:0/stream:all Compute (所有GPU花费总时间,GPU使用情况)</li>
+<li>/gpu:0/context#0/stream#1:Kernel Compute(GPU计算情况)</li>
+<li>/gpu:0/context#0/stream#2:MemcpyHtoD Compute(CPU拷贝数据到GPU计算情况)</li>
+<li>/gpu:0/context#0/stream#3:MemcpyDtoH Compute(GPU拷贝数据到CPU计算情况)</li>
+<li>/host:CPU Compute(CPU计算情况)</li>
+<li>/job:localhost/replica:0/task:0/device:CPU:0 Compute(cpu使用情况)</li>
+<li>/job:localhost/replica:0/task:0/device:GPU:0 Compute(cpu把任务发到gpu上)<br>2,3,4加起来就是1的情况，但5跟6有什么区别，7跟其他又有什么区别</li>
+</ol>
+<h1 id="使用"><a href="#使用" class="headerlink" title="使用"></a>使用</h1><p>MNSIT数据集的DNN模型，模型比较简单，就三个隐藏层，一个softmax输出层。Timeline只是记录了某一轮(即某个epoch)的训练结果。<br>1.定义run_options 和 run_metadata, 用于保存op的属性</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">run_options &#x3D; tf.RunOptions(trace_level&#x3D;tf.RunOptions.FULL_TRACE)</span><br><span class="line">run_metadata &#x3D; tf.RunMetadata()</span><br></pre></td></tr></table></figure>
+<p>2.保存</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">fetched_timeline &#x3D; timeline.Timeline(run_metadata.step_stats)</span><br><span class="line">chrome_trace &#x3D; fetched_timeline.generate_chrome_trace_format()</span><br><span class="line">with open(&#39;timeline.json&#39; % i, &#39;w&#39;) as f:</span><br><span class="line">f.write(chrome_trace)</span><br></pre></td></tr></table></figure>
+<h2 id="TensorFlow纯CPU情况"><a href="#TensorFlow纯CPU情况" class="headerlink" title="TensorFlow纯CPU情况"></a>TensorFlow纯CPU情况</h2><p>从Timeline可以看出，模型训练时主要在CPU上，没有GPU的信息，说明未使用到GPU，总的耗时在18ms左右。<br><img src="/images/timeline/1.png" alt="" title="timeline"></p>
+<h2 id="指定网络在GPU上"><a href="#指定网络在GPU上" class="headerlink" title="指定网络在GPU上"></a>指定网络在GPU上</h2><p>也是会用到GPU</p>
+<h2 id="CPU-GPU情况"><a href="#CPU-GPU情况" class="headerlink" title="CPU+GPU情况"></a>CPU+GPU情况</h2><p>从Timeline可以看出，模型训练时计算主要在GPU上，总的耗时在5ms左右，比纯CPU快。<br>但：<strong>相同代码，使用到GPU为什么结果跟只使用CPU不相同，而且连op都不一样</strong><br><img src="/images/timeline/2.png" alt="" title="timeline"></p>
+<h1 id="keras使用timeline"><a href="#keras使用timeline" class="headerlink" title="keras使用timeline"></a>keras使用timeline</h1><p>因此不同于传统的Tensorflow 方式，需要在 model.compile()中增加profile相关配置。</p>
+<blockquote>
+<p>代码部分：</p>
+<ol>
+<li>定义 run_options 和 run_metadata, 用于保存op的属性</li>
+</ol>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">run_options &#x3D; tf.RunOptions(trace_level&#x3D;tf.RunOptions.FULL_TRACE)</span><br><span class="line">run_metadata &#x3D; tf.RunMetadata() </span><br><span class="line">……</span><br></pre></td></tr></table></figure>
+<blockquote>
+<ol start="2">
+<li>将  run_options 和 run_metadata 添加至 model的 compile方法</li>
+</ol>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">model.compile(</span><br><span class="line">	……</span><br><span class="line">	options&#x3D;run_options,</span><br><span class="line">	run_metadata&#x3D;run_metadata</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<blockquote>
+<ol start="3">
+<li>在 timeline.json中保存 run_metadate</li>
+</ol>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">from tensorflow.python.client import timeline</span><br><span class="line">tl &#x3D; timeline.Timeline(run_metadata.step_stats)</span><br><span class="line">ctf &#x3D; tl.generate_chrome_trace_format()</span><br><span class="line">with open(os.path.join(logdir, &#39;timeline.json&#39;), &#39;a+&#39;) as f:</span><br><span class="line">	f.write(ctf)</span><br></pre></td></tr></table></figure>
+<p>一般只取一个epoch情况，不需要合并多个epoch情况</p>
+<h1 id="horovod使用timeline"><a href="#horovod使用timeline" class="headerlink" title="horovod使用timeline"></a>horovod使用timeline</h1><p>Horovod也封装了Timeline，只需指定Timeline输出文件位置即可，比TensorFlow、Keras简单，不用嵌入代码。<br>使用mpirun命令跑timeline，<a href="https://github.com/horovod/horovod/blob/master/docs/mpirun.rst" target="_blank" rel="noopener">官网链接</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ HOROVOD_TIMELINE&#x3D;&#x2F;path&#x2F;to&#x2F;timeline.json mpirun -np 4 -x HOROVOD_TIMELINE python train.py</span><br></pre></td></tr></table></figure>
+
+<p>使用horovodrun命令跑timeline</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ horovodrun -np 4 --timeline-filename &#x2F;path&#x2F;to&#x2F;timeline.json python train.py</span><br></pre></td></tr></table></figure>
+<p>只是一个工具的初步认识，深入分析需要实验相结合。<br>未知Horovod跑pytorch、mxnet是否也可以用该Timeline工具</p>
+<h2 id="horovod-timeline"><a href="#horovod-timeline" class="headerlink" title="horovod timeline"></a>horovod timeline</h2><p>horovod封装的timeline与TensorFlow原生不同，只关注网络每一层broadcast和reduce消耗时间<br>其tensor进行reduce主要涉及两个阶段：</p>
+<ol>
+<li><strong>Negotiation</strong>-可以认为是初始化阶段，涉及部分如下：<ul>
+<li>在<strong>NEGOTIATE_ALLREDUCE</strong>条下有标识每个worker号，因此可以看出每个worker开始时间，所有的worker发信号给worker 0，通知worker0他们准备好进行broadcast和reduce操作<br><img src="/images/timeline/4" alt="" title="worker id"></li>
+<li>之后worker0 发信号给其他worker开始工作</li>
+</ul>
+</li>
+<li><strong>Processing</strong>-可以认为是主要通信阶段，涉及部分如下<br>实际发生通信操作的阶段，并且高亮来强调使用纯MPI接口的操作，如MPI_Broadcast() and MPI_Allreduce()<ul>
+<li>WAIT_FOR_DATA：只有在GPU执行才有，表示等待GPU完成allreduce、allgather或broadcast操作的计算输入所花费的时间</li>
+<li>WAIT_FOR_OTHER_TENSOR_DATA：表示等待GPU为同一融合批处理中的其他操作完成其他输入计算所花费的时间</li>
+<li>QUEUE：前面NCCL操作还未完成，要对当前操作进行reduce时发生</li>
+<li>MEMCPY_IN_FUSION_BUFFER：将数据拷贝到fusion buffer的耗时</li>
+<li>MEMCPY_OUT_FUSION_BUFFER：从fusion buffer拷贝数据的耗时</li>
+<li>NCCL_ALLREDUCE：表示在GPU(或CPU)上执行实际操作所花费的时间，并突出显示该操作是使用NCCL还是纯MPI执行的</li>
+<li>MPI_ALLREDUCE：同上</li>
+<li>MPI_ALLGATHER：同上</li>
+<li>MPI_BCAST：同上</li>
+<li>在HOROVOD_HIERARCHICAL_ALLREDUCE=1情况下：NCCL_ALLREDUCE将会分解成NCCL_REDUCESCATTER, NCCL_REDUCE, MEMCPY_IN_HOST_BUFFER, MPI_ALLREDUCE, MEMCPY_OUT_HOST_BUFFER, NCCL_ALLGATHER, NCCL_BCAST</li>
+</ul>
+</li>
+</ol>
+<p>简单的一个mnist数据集跑的timeline结果，基于CPU运行；<br><img src="/images/timeline/5.png" alt=""></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/introduce/">introduce</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/deeplearning/">deeplearning</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://hhwode.github.io/2020/02/07/hvd/Timeline/" data-title="Timeline | The Notes of HH" data-tsina="" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2020/02/07/deeplearning/Tensorflow Large-Scale Machine Learning on Heterogeneous Distributed Systems/" title="Tensorflow Large-Scale Machine Learning on Heterogeneous Distributed Systems">
+  <strong>新一篇:</strong><br/>
+  <span>
+  Tensorflow Large-Scale Machine Learning on Heterogeneous Distributed Systems</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2020/02/06/hpc/BringingHPCTechniquesToDL/"  title="Bringing HPC Techniques to Deep Learning">
+ <strong>旧一篇:</strong><br/> 
+ <span>Bringing HPC Techniques to Deep Learning
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="Timeline" data-thread-key="hvd/Timeline" data-author-key="John Doe" data-url="https://hhwode.github.io/post/hvd/Timeline"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo" target="_blank" rel="noopener">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp" target="_blank" rel="noopener">Tinnypp</a>.</span>
+		
+			<span>© HH</span>
+		
+	<div>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"tinnypp"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

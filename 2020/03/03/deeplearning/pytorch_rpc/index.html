@@ -1,0 +1,382 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>PyTorch RPC | The Notes of HH</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="John Doe">
+    
+    <meta name="description" content="PyTorch RPC1 介绍PyTorch在2020年1月16日发布的1.4.0版本中开始支持分布式模型并行（验证性），该版本提供了一个分布式RPC框架来支持分布式模型并行训练，它允许远程运行函数和引用远程对象，而不需要拷贝实际数据，并提供autograd和优化器API来跨RPC进行反向传播和参数">
+    
+    
+    
+    
+    <link rel="alternative" href="/Tinnypp/atom.xml" title="The Notes of HH" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/myLogo.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/myLogo.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.svg" alt="The Notes of HH" title="The Notes of HH"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="The Notes of HH">The Notes of HH</a></h1>
+				<h2 class="blog-motto">Hold Your Horse</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="https://hhwode.github.io/">首页</a></li>
+					
+						<li><a href="https://hhwode.github.io/archives">归档</a></li>
+					
+					<li>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2020/03/03/deeplearning/pytorch_rpc/" title="PyTorch RPC" itemprop="url">PyTorch RPC</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2020-03-02T16:00:00.000Z" itemprop="datePublished">2020-03-03</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#PyTorch-RPC"><span class="toc-number">1.</span> <span class="toc-text">PyTorch RPC</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-介绍"><span class="toc-number">1.1.</span> <span class="toc-text">1 介绍</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-框架"><span class="toc-number">1.2.</span> <span class="toc-text">2 框架</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1torch-distributed-rpc"><span class="toc-number">1.2.1.</span> <span class="toc-text">2.1torch.distributed.rpc</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-1RPC"><span class="toc-number">1.2.2.</span> <span class="toc-text">2.1.1RPC</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-2RRef"><span class="toc-number">1.2.3.</span> <span class="toc-text">2.1.2RRef</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-3Distributed-Autograd"><span class="toc-number">1.2.4.</span> <span class="toc-text">2.1.3Distributed Autograd</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-4Distributed-Optimizer"><span class="toc-number">1.2.5.</span> <span class="toc-text">2.1.4Distributed Optimizer</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3示例"><span class="toc-number">1.3.</span> <span class="toc-text">3示例</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4总结"><span class="toc-number">1.4.</span> <span class="toc-text">4总结</span></a></li></ol></li></ol>
+		</div>
+		
+		<h1 id="PyTorch-RPC"><a href="#PyTorch-RPC" class="headerlink" title="PyTorch RPC"></a>PyTorch RPC</h1><h2 id="1-介绍"><a href="#1-介绍" class="headerlink" title="1 介绍"></a>1 介绍</h2><p>PyTorch在2020年1月16日发布的1.4.0版本中开始支持分布式模型并行（验证性），该版本提供了一个分布式RPC框架来支持分布式模型并行训练，它允许远程运行函数和引用远程对象，而不需要拷贝实际数据，并提供autograd和优化器API来跨RPC进行反向传播和参数更新。<br>在1.4.0版本后提供torch.distributed.rpc包来支持分布式模型并行，现阶段还是验证性的，不稳定，API也会修改（看过1.5.0a0+ad3f4a3版，API稍有不同）。当然，用户可以依据源码进行适配。<br>Pytorch目前支持分布式数据并行和单机模型并行，作者对强化学习学习策略和模型量考虑，所以才提供RPC框架来支持分布式模型并行。我们主要关注第二点原因，即：<br>当模型太大，不能在单个机器上进行模型并行时，就需要将模型划分到多个机器上。<br>此外，也可以使用这个RPC框架来自定义PS结构。以下内容基于PyTorch 1.4.0版本介绍进行整理。</p>
+<h2 id="2-框架"><a href="#2-框架" class="headerlink" title="2 框架"></a>2 框架</h2><p>深度学习的分布式模型并行难在如下两点，需要不同进程协助工作：</p>
+<ul>
+<li>1、模型划分后，前后有依赖关系，需要传递数据；</li>
+<li>2、跨机器的反向传播与梯度更新策略如何制定。<h3 id="2-1torch-distributed-rpc"><a href="#2-1torch-distributed-rpc" class="headerlink" title="2.1torch.distributed.rpc"></a>2.1torch.distributed.rpc</h3>PyTorch提供的 torch.distributed.rpc包有以下几部分组成：RPC、RRef、distributed autograd、distributed optimizer；前两个是接收和发送数据，后两个是类似在本地执行反向传播与梯度更新操作。<h3 id="2-1-1RPC"><a href="#2-1-1RPC" class="headerlink" title="2.1.1RPC"></a>2.1.1RPC</h3>Remote Procedure Call（RPC）支持使用给定的参数在指定的目标节点上运行函数，并获取返回值或创建返回值的引用。可以认为指定函数到远端节点计算，而本地只需要获取远端节点返回的输出值即可，能使我们像操作本地计算一样使用远程节点计算。<br>现阶段主要函数如下：</li>
+<li>1、init_rpc()：初始化RPC框架，RRef框架和distributed autograd，后端默认使用gloo通信，也支持mpi、nccl。</li>
+<li>2、rpc_sync()：同步操作，有阻塞，如果用户代码在没有返回值的情况下无法继续，则使用同步API。</li>
+<li>3、rpc_async()：异步操作，异步就需要一个额外的future来存储远端返回值，以供调用。</li>
+<li>4、remote()：异步操作并返回对远程返回值的引用，比如远端创建一些东西，但不需要将其获取给本地，也就是本地不需要知道远端某些操作，也不会调用。</li>
+<li>5、get_worker_info()：获取指定worker信息</li>
+<li>6、shutdown()：关闭RPC代理<br>API：<br>torch.distributed.rpc.init_rpc(name, backend=BackendType.PROCESS_GROUP, rank=-1, world_size=None, rpc_backend_options=None)</li>
+</ul>
+<p>torch.distributed.rpc.rpc_sync(to, func, args=None, kwargs=None)<br>torch.distributed.rpc.rpc_async(to, func, args=None, kwargs=None)<br>torch.distributed.rpc.remote(to, func, args=None, kwargs=None)</p>
+<h3 id="2-1-2RRef"><a href="#2-1-2RRef" class="headerlink" title="2.1.2RRef"></a>2.1.2RRef</h3><p>Remote Reference（RRef）用作指向本地或远程对象的分布式共享指针。用该种方式创建的变量可以本地和远端使用，但每个RRef只有一个拥有者，而对象只存在于该拥有者上，而持有RRef的非拥有者可以通过显式请求从拥有者那里获得对象的副本。    比如该对象在A创建，但B也持有，那么B访问该对象时，就会从A那里拷贝一份，所以此处会产生数据传输。Distributed Optimizer就是依据此种功能实现。<br>主要函数：</p>
+<ul>
+<li>1、is_owner()：判断是否引用拥有者</li>
+<li>2、local_value()：如果是拥有者，就返回对应本地值，否则发生异常</li>
+<li>3、owner()：返回拥有者信息</li>
+<li>4、to_here()：会阻塞，将引用拥有者的值复制到本地使用，如果当前节点时拥有者就直接返回该值。<h3 id="2-1-3Distributed-Autograd"><a href="#2-1-3Distributed-Autograd" class="headerlink" title="2.1.3Distributed Autograd"></a>2.1.3Distributed Autograd</h3>计算梯度模块，用于分布式发送和接收梯度。分布式Autograd将所有节点上涉及前向传递的本地Autograd引擎缝合在一起，并在后向传递期间自动与它们接触以计算梯度。PyTorch将分布式前向反向操作串在一起，不需要用户自己实现，按理更新时就是每个节点更新自己那部分。<br>主要函数：</li>
+<li>1、torch.distributed.autograd.context：前向和反向传播时需要的标识，只会创建一个</li>
+<li>2、torch.distributed.autograd.backward：</li>
+<li>3、torch.distributed.autograd.get_gradients<br>该部分是重点，单机在前向传播时，PyTorch会创建autograd图，用于反向传播；而分布式需要跟踪所有RPC操作，为了创建autograd图，其中涉及到机器间的通信，所以distributed autograd比autograd多了一些函数协助，如send和recv函数。<h3 id="2-1-4Distributed-Optimizer"><a href="#2-1-4Distributed-Optimizer" class="headerlink" title="2.1.4Distributed Optimizer"></a>2.1.4Distributed Optimizer</h3>分布式优化器需要指定待优化的参数RRef列表，在每个不同的RRef拥有者上创建一个Optimizer对象，并在调用该对象的step函数时，更新对应参数。跟2.1.3Distributed Autograd类似，都是每个节点有一份，而在主节点进行封装成一份使用，所以才让用户不感知。<br>主要函数：</li>
+<li>1、torch.distributed.optim.DistributedOptimizer：将远程引用分散到每个节点，存在1）无法保证同一时间客户端都执行完整个前向后向优化，2）无法保证节点的执行顺序？</li>
+<li>2、step()：拥有参数的每个节点都会调用torch.optim.Optimizer.step()来更新参数，并且会阻塞，直到所有worker更新完。<h2 id="3示例"><a href="#3示例" class="headerlink" title="3示例"></a>3示例</h2></li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在给定的RRef上调用方法的辅助函数</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">_call_method</span><span class="params">(method, rref, *args, **kwargs)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> method(rref.local_value(), *args, **kwargs)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 该函数用于在rref的拥有者上运行方法并使用RPC取回结果，远程调用使用</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">_remote_method</span><span class="params">(method, rref, *args, **kwargs)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> rpc.rpc_sync(</span><br><span class="line">        rref.owner(),</span><br><span class="line">        _call_method,</span><br><span class="line">        args=[method, rref] + list(args),</span><br><span class="line">        kwargs=kwargs)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 为给定的本地模块中的每个参数创建一个RRef，并返回一个RRef列表，但不清楚是# 否远端所有参数都会生成一个单独的RRef在本地，如果是，那本地就拥有所有的参  # 数；如果不是，那么多一些RRef引用，还是能接受</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">_parameter_rrefs</span><span class="params">(module)</span>:</span></span><br><span class="line">    param_rrefs = []</span><br><span class="line">    <span class="keyword">for</span> param <span class="keyword">in</span> module.parameters():</span><br><span class="line">        param_rrefs.append(RRef(param))</span><br><span class="line">    <span class="keyword">return</span> param_rrefs</span><br></pre></td></tr></table></figure>
+<h2 id="4总结"><a href="#4总结" class="headerlink" title="4总结"></a>4总结</h2><p>对该框架的一些理解性总结，是否合适，又或者能否支持</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/introduce/">introduce</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/deeplearning/">deeplearning</a>►<a class="article-category-link" href="/categories/deeplearning/distributedTraining/">distributedTraining</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://hhwode.github.io/2020/03/03/deeplearning/pytorch_rpc/" data-title="PyTorch RPC | The Notes of HH" data-tsina="" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2020/03/04/face/ArcFace_Additive Angular Margin Loss for Deep Face Recognition/" title="ArcFace_Additive Angular Margin Loss for Deep Face Recognition">
+  <strong>新一篇:</strong><br/>
+  <span>
+  ArcFace_Additive Angular Margin Loss for Deep Face Recognition</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2020/03/01/algorithm/gradientDescent/"  title="Gradient Descent">
+ <strong>旧一篇:</strong><br/> 
+ <span>Gradient Descent
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="PyTorch RPC" data-thread-key="deeplearning/pytorch_rpc" data-author-key="John Doe" data-url="https://hhwode.github.io/post/deeplearning/pytorch_rpc"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo" target="_blank" rel="noopener">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp" target="_blank" rel="noopener">Tinnypp</a>.</span>
+		
+			<span>© HH</span>
+		
+	<div>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"tinnypp"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

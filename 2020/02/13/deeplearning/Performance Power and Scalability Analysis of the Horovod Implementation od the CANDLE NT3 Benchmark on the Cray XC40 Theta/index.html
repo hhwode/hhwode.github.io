@@ -1,0 +1,436 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Performance Power and Scalability Analysis of the Horovod Implementation od the CANDLE NT3 Benchmark on the Cray XC40 Theta | The Notes of HH</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="John Doe">
+    
+    <meta name="description" content="芝加哥大学Xingfu Wu等于2018年发表的一篇horovod框架的测试论文
+Three PassThe first pass列出
+
+标题，摘要，介绍
+
+标题：Performance Power and Scalability Analysis of the Horovod Implementa">
+    
+    
+    
+    
+    <link rel="alternative" href="/Tinnypp/atom.xml" title="The Notes of HH" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/myLogo.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/myLogo.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.svg" alt="The Notes of HH" title="The Notes of HH"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="The Notes of HH">The Notes of HH</a></h1>
+				<h2 class="blog-motto">Hold Your Horse</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="https://hhwode.github.io/">首页</a></li>
+					
+						<li><a href="https://hhwode.github.io/archives">归档</a></li>
+					
+					<li>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2020/02/13/deeplearning/Performance Power and Scalability Analysis of the Horovod Implementation od the CANDLE NT3 Benchmark on the Cray XC40 Theta/" title="Performance Power and Scalability Analysis of the Horovod Implementation od the CANDLE NT3 Benchmark on the Cray XC40 Theta" itemprop="url">Performance Power and Scalability Analysis of the Horovod Implementation od the CANDLE NT3 Benchmark on the Cray XC40 Theta</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2020-02-13T12:44:24.000Z" itemprop="datePublished">2020-02-13</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Three-Pass"><span class="toc-number">1.</span> <span class="toc-text">Three Pass</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#The-first-pass"><span class="toc-number">1.1.</span> <span class="toc-text">The first pass</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#The-second-pass"><span class="toc-number">1.2.</span> <span class="toc-text">The second pass</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#The-third-pass"><span class="toc-number">1.3.</span> <span class="toc-text">The third pass</span></a></li></ol></li></ol>
+		</div>
+		
+		<p>芝加哥大学Xingfu Wu等于2018年发表的一篇horovod框架的测试论文</p>
+<h1 id="Three-Pass"><a href="#Three-Pass" class="headerlink" title="Three Pass"></a>Three Pass</h1><h2 id="The-first-pass"><a href="#The-first-pass" class="headerlink" title="The first pass"></a>The first pass</h2><p><strong>列出</strong></p>
+<ol>
+<li><p>标题，摘要，介绍</p>
+<blockquote>
+<p>标题：Performance Power and Scalability Analysis of the Horovod Implementation od the CANDLE NT3 Benchmark on the Cray XC40 Theta，其中有几个词不清楚是什么：CANDLE NT3 Benchmark应该是某种模型，Cray XC40 Theta这是超级计算机的一种型号，也就是验证horovod的性能，功率和扩展性<br>摘要：主要分析的是NT3模型的可扩展性、性能和功率在不同batch size和学习率下的影响，通过节点功率文件，CPU，内存和timeline来进行分析horovod，并且在NT3增加节点数量时，horovod通信开销可以hold住。实验结论也表明batch size增加可以减少训练时间，学习率变大可以更快收敛，并轻微减少功率使用。还有一些遗留问题。<br>介绍：前置条件介绍<br>【1】分布式工具使用horovod，而不是原生tensorflow代码，也介绍了为什么选用horovod，开源，代码修改少，分布式比原生tensorflow快接近2倍在每秒处理图片数上<br>【2】CANDLE project：使用单个DNN代码解决三个问题<br>【3】NT3：keras实现的一种CANDLE project代码<br>【4】文献15的一个用 Horovod-like Cray CPE ML Plugin比horovod和tensorflow分布式效果都好，但不开源，并且只针对 Cray systems，所以只能使用horovod<br>【5】horovod并行实现关注NT3的： scalability, performance, and power characteristics在不同batch size和学习率下的两种内存模式，cache和flat，在Cray XC40 Theta环境上<br>【6】实验表明：1、cache模式比flat模式开销更小，2、batch size增加可减少训练时间和功率消耗，3、增加学习率可以轻微减少训练时间和功率，并增加准确率<br>【7】论文贡献如下：1、使用horovod实现的NT3模型可以作为参考，用于实现其他模型，2、分析了NT3基准测试的Horovod实现的可伸缩性，并讨论了Horovod<strong>开销</strong>，3、研究了Horovod实现的NT3基准测试的性能和功率特性，并使用功率分析来分析学习速率和批大小等参数如何影响性能和功率（什么是power profiling）<br>【8】后面章节围绕几个名词：NT3，horovod，Cray XC40 Theta，实验，分析</p>
+</blockquote>
+</li>
+<li><p>章节</p>
+<blockquote>
+<p>CANDLE NT3 Benchmark and Its Horovod Implementation: CANDLE NT3 Benchmark, Horovod, Using Horovod to Parallelize the NT33 Benchmark<br>System Platform: Cray XC40 Theta<br>Scalability Analysis: Original NT3 Benchmark under Different Memory Modes, Horovod NT3 Benchmark<br>Performance and Power Analysis of the Horovod NT3 Benchmark: Cache Mode, Flat Mode<br>Conclusions<br>Reference</p>
+</blockquote>
+</li>
+<li><p>数学原理</p>
+<blockquote>
+<p>如何用，如何针对某个问题的实现，如数学原理</p>
+</blockquote>
+</li>
+<li><p>结论</p>
+<blockquote>
+<p> 论文本身关注什么：performance，power，scalability；这些因素在调节batch size和学习率和两种内存模式-cache、flat mode的影响<br>关注的东西在实验分析后得出：batch size增大，训练时间减少，其实就是分布式规模可扩展，并且能提高训练速度<br>遗留问题：1、数据加载时间，2、horovod数据shard和shuffle，可减少loss提高acc，3、使用的cProfile工具只包含总的tf运行时间，没有细节，可供选择工具NVProf</p>
+</blockquote>
+</li>
+<li><p>文献</p>
+</li>
+</ol>
+<p><strong>回答</strong></p>
+<ol>
+<li><p>论文类型</p>
+<blockquote>
+<p>现有系统测试，使用horovod实现了现有业务需要的DNN代码，并进行了对应性能、功率和扩展性的测试</p>
+</blockquote>
+</li>
+<li><p>相关背景内容</p>
+<blockquote>
+<p>可以说是对horovod的一种测试，里面实验方式可供参考</p>
+</blockquote>
+</li>
+<li><p>正确性</p>
+<blockquote>
+<p>从结论上看，batch size增加能减少训练时间，与分布式原理一致</p>
+</blockquote>
+</li>
+<li><p>贡献点、创新点</p>
+<blockquote>
+<p>1、比较系统的分析了horovod的性能，2、实验方式可供参考，3、实验分析方法可借鉴</p>
+</blockquote>
+</li>
+<li><p>文献</p>
+<blockquote>
+<p> Scaling Deep Learning, ALCF SDL(Simulation, Data and Learning) Workshop, March 2018<br> <a href="https://docs.nvidia.com/cuda/profiler-users-guide/index.html" target="_blank" rel="noopener">NVProf</a><br> <a href="https://docs.python.org/2/library/profile.html" target="_blank" rel="noopener">Python Profilers</a></p>
+</blockquote>
+</li>
+<li><p>是否继续</p>
+<blockquote>
+<p>建议继续深入，主要关注实验方式和实验分析方法</p>
+</blockquote>
+</li>
+</ol>
+<h2 id="The-second-pass"><a href="#The-second-pass" class="headerlink" title="The second pass"></a>The second pass</h2><p><strong>图表</strong></p>
+<ul>
+<li>第二章：介绍NT3和horovod<br>NT3：就是一维卷积，涉及部分1、data loading,2、preprocessing，3、basic training and cross-validation，4、prediction and evaluation on test data；训练集597MB，测试集149MB，SGD优化器，400个epochs，batch size是20，learning rate是0.001<br>Horovod：hvd的目标是使分布式深度学习更快更简单，hvd核心概念是基于MPI概念的，比如size、rank、local rank、allreduce、allgather、broadcast；Horovod的一个独特的特性是它能够交错通信和计算；使用MPI_Allreduce()来平均梯度</li>
+<li>第三章：Cray XC40 Theta系统平台介绍<br>Cray XC40 Theta：64 compute cores(一个英特尔Phi骑士登陆(KNL) 7230与热设计功率(TDP) 215瓦)，16gb的高带宽内包内存，192GB的DDR4 RAM，128GB的SSD，共享L2缓存32 MB(由两个核心共享的1MB L2缓存)，使用210GB/s的带宽，剩下是专门针对Cray系统的一些监控软件<br>cache mode优先分配内存是MCDRAM，之后才是DDR<br><img src="/images/Performance/1.png" alt="cache mode" title="cache mode"><br>flat mode优先分配内存是DDR4，之后是MCDRAM<br><img src="/images/Performance/2.png" alt="flat mode" title="flat mode"><br>不同的mode对性能和功率都有影响，所以才会研究cache mode和flat mode</li>
+<li>第四章：扩展性分析<br>【1】对比cache mode和flat mode在单机一个epoch下功率消耗，结果是cache mode相对较好，刚好能缓存所有数据，并且batch size越大，功率消耗越低，因限制没有无限尝试，毕竟单机内存等有限<br>【2】单个epoch，batch size为20进行horovod实验，通过cProfile来记录每个操作的耗时，一个epoch是过完所有训练集，所以即使集群节点不同，处理的数据量也是一样的，因为有节点间通信开销，所以节点越多，训练相同数据量耗时越长，这个结果是符合预期的。<br><img src="/images/Performance/3.png" alt="take time" title="profile"></li>
+<li>第五章：不同条件的horovod实验，但超参数都是固定400 epochs，20 batch size， 0.001 learning rate，改变的是集群节点数、memory mode，并且关注三个东西：time，loss，accuracy<br>只是对epochs进行划分，<strong>由于我们没有对训练数据进行切分，所以每个epoch都对数据进行一次完整的遍历</strong>。依据集群最多节点时将一个节点一次epoch耗费时间当成总epoch时间，节点越少，计算时间就得多依赖几个epoch，简单说就是<strong>所有实验处理相同数据量的时间对比，集群最大的关注一个epoch，剩下的可能需要n个epoch才能处理相同数据量</strong><br><img src="/images/Performance/4.png" alt="从结果看，准确率需要多个epoch，但处理的数据量是一致的，待解释" title="horovod result"><br>400节点是1个epoch，100节点是4个epoch，25节点是16个epoch（保证了处理400份数据），数据量是一样的，节点多的并行处理，所以速度更快。但loss，acc都不如节点少的。<br>结论是：适当的增加学习率可以提高准确率，模型训练需要适当的epoch数来达到高准确率<br>（对timeline的使用让我怀疑人生，怎么分析界面都是不一样的，看着头疼）</li>
+</ul>
+<p><strong>相关文献</strong></p>
+<blockquote>
+<p>NT3<a href="https://github.com/ECP-CANDLE/Benchmarks" target="_blank" rel="noopener">代码</a><br><a href="https://docs.nvidia.com/cuda/profiler-users-guide/index.html" target="_blank" rel="noopener">NVProf</a><br><a href="https://docs.python.org/2/library/profile.html" target="_blank" rel="noopener">Python Profilers</a></p>
+</blockquote>
+<h2 id="The-third-pass"><a href="#The-third-pass" class="headerlink" title="The third pass"></a>The third pass</h2><p><strong>实验</strong></p>
+<p><strong>重现</strong></p>
+<p><strong>体会</strong></p>
+<blockquote>
+<p>作为一篇系统测试论文，整个流程介绍的比较仔细，并且开源实验代码，只是环境可能比较特定，但也容易让人进行重现，对timline的分析，cProfile工具使用，horovod框架选择原因等都有比较细致说明。其实还是讲得比较简单，参考意义也不大:-)</p>
+</blockquote>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/introduce/">introduce</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/deeplearning/">deeplearning</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://hhwode.github.io/2020/02/13/deeplearning/Performance%20Power%20and%20Scalability%20Analysis%20of%20the%20Horovod%20Implementation%20od%20the%20CANDLE%20NT3%20Benchmark%20on%20the%20Cray%20XC40%20Theta/" data-title="Performance Power and Scalability Analysis of the Horovod Implementation od the CANDLE NT3 Benchmark on the Cray XC40 Theta | The Notes of HH" data-tsina="" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2020/02/13/贪心学院NLP公开课/" title="贪心学院NLP公开课">
+  <strong>新一篇:</strong><br/>
+  <span>
+  贪心学院NLP公开课</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2020/02/13/hvd/Linux安装hvd/"  title="Linux安装horovod">
+ <strong>旧一篇:</strong><br/> 
+ <span>Linux安装horovod
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="Performance Power and Scalability Analysis of the Horovod Implementation od the CANDLE NT3 Benchmark on the Cray XC40 Theta" data-thread-key="deeplearning/Performance Power and Scalability Analysis of the Horovod Implementation od the CANDLE NT3 Benchmark on the Cray XC40 Theta" data-author-key="John Doe" data-url="https://hhwode.github.io/post/deeplearning/Performance Power and Scalability Analysis of the Horovod Implementation od the CANDLE NT3 Benchmark on the Cray XC40 Theta"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo" target="_blank" rel="noopener">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp" target="_blank" rel="noopener">Tinnypp</a>.</span>
+		
+			<span>© HH</span>
+		
+	<div>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"tinnypp"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

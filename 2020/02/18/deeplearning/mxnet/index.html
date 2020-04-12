@@ -1,0 +1,504 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>mxnet | The Notes of HH</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="John Doe">
+    
+    <meta name="description" content="概念
+1、mxnet介绍DMLC社区开源的深度学习框架，也是Apache的孵化项目特点：
+
+接口清晰，易用
+显存利用与多卡并行效率高
+部署成熟，PC、移动
+支持多语言python、R、matlab、JavaScript等
+具有静态图编程接口mxnet和动态图编程接口Gluon
+
+
+2、一个模型训练模">
+    
+    
+    
+    
+    <link rel="alternative" href="/Tinnypp/atom.xml" title="The Notes of HH" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/myLogo.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/myLogo.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.svg" alt="The Notes of HH" title="The Notes of HH"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="The Notes of HH">The Notes of HH</a></h1>
+				<h2 class="blog-motto">Hold Your Horse</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="https://hhwode.github.io/">首页</a></li>
+					
+						<li><a href="https://hhwode.github.io/archives">归档</a></li>
+					
+					<li>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2020/02/18/deeplearning/mxnet/" title="mxnet" itemprop="url">mxnet</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2020-02-18T12:44:24.000Z" itemprop="datePublished">2020-02-18</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#概念"><span class="toc-number">1.</span> <span class="toc-text">概念</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#常用API"><span class="toc-number">2.</span> <span class="toc-text">常用API</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#gpu"><span class="toc-number">2.1.</span> <span class="toc-text">gpu()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#cpu"><span class="toc-number">2.2.</span> <span class="toc-text">cpu()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#symbol"><span class="toc-number">2.3.</span> <span class="toc-text">symbol()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Context"><span class="toc-number">2.4.</span> <span class="toc-text">Context()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ctx"><span class="toc-number">2.5.</span> <span class="toc-text">ctx()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Symbols"><span class="toc-number">2.6.</span> <span class="toc-text">Symbols()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#AttrScope"><span class="toc-number">2.7.</span> <span class="toc-text">AttrScope()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#建立一个网络"><span class="toc-number">2.8.</span> <span class="toc-text">建立一个网络</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#mxnet定义"><span class="toc-number">2.8.1.</span> <span class="toc-text">mxnet定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#gluon定义"><span class="toc-number">2.8.2.</span> <span class="toc-text">gluon定义</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Gluon"><span class="toc-number">3.</span> <span class="toc-text">Gluon</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#分布式"><span class="toc-number">4.</span> <span class="toc-text">分布式</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Question"><span class="toc-number">5.</span> <span class="toc-text">Question</span></a></li></ol>
+		</div>
+		
+		<h1 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h1><ul>
+<li><p><strong>1、mxnet介绍</strong><br>DMLC社区开源的深度学习框架，也是Apache的孵化项目<br>特点：</p>
+<ol>
+<li>接口清晰，易用</li>
+<li>显存利用与多卡并行效率高</li>
+<li>部署成熟，PC、移动</li>
+<li>支持多语言python、R、matlab、JavaScript等</li>
+<li>具有静态图编程接口mxnet和动态图编程接口Gluon</li>
+</ol>
+</li>
+<li><p><strong>2、一个模型训练模块：</strong></p>
+<ol>
+<li>读取数据、数据处理</li>
+<li>定义网络结构</li>
+<li>定义优化器</li>
+<li>定义学习率，固定还是warmup形式</li>
+<li>衡量模型好坏，性能、速度等</li>
+<li>执行网络，从网络获取节点值</li>
+<li>其他能监控网络执行过程的模块，性能分析工具</li>
+</ol>
+</li>
+<li><p><strong>3、mxnet核心接口</strong></p>
+<ol>
+<li>Context： 指定运行设备，CPU，GPU</li>
+</ol>
+<ul>
+<li>mxnet.cpu(0) 类似TensorFlow的 tf.device(‘/cpu:0’)</li>
+<li>mxnet.gpu(0) 类似TensorFlow的 tf.device(‘/gpu:0’)</li>
+</ul>
+<ol start="2">
+<li>NDArray： Python与C++交互的数据对象</li>
+</ol>
+<ul>
+<li>升级版Numpy，同时支持CPU和GPU，有ctx输入参数</li>
+<li>与numpy转换，nd.asnumpy</li>
+</ul>
+<ol start="3">
+<li>DataIter： 为训练提供batch数据</li>
+</ol>
+<ul>
+<li>高性能数据读取文件格式：rec，类似tf的tfrecord，caffe的imdb</li>
+<li>im2rec.py工具创建rec文件<br>prefix:lst文件所在目录<br>root：图片所在根目录<br>–resize：压缩图片使图片最短边resize成指定大小<br>–pack-label：如果lst文件中写了多个label，则需要设置为True<br>–shuffle：如果要对lst文件进行shuffle后写入rec，则需设置为True<br>例子：</li>
+<li>ImageRecordIter：分类任务图片读取</li>
+<li>ImageDetRecordIter：检测任务图片读取</li>
+<li>BucketSentenceIter：用于不定长序列数据的迭代，常用于RNN</li>
+</ul>
+<ol start="4">
+<li>Symbol： 定义网络，用于符号式编程接口，只是构建图的结构，没有立即执行</li>
+</ol>
+<ul>
+<li>类似隐含定义了权值与偏差</li>
+<li>Symbol.infer_type:推导当前Symbol依赖的所有Symbol类型<br>Symbol.infer_shape:推导当前Symbol依赖的所有Symbol形状<br>Symbol.list_arguments:列出当前Symbol所用到的基本参数名称<br>Symbol.list_outputs:列出当前Symbol的输出名称<br>Symbol.list_auxiliary_states:列出当前Symbol的辅助参数名称<br>arguments = 输入数据Symbol + 权值参数Symbol<br>auxiliary_states = 辅助Symbol，比如BN中的gamma和beta<ul>
+<li>Symbol如何执行<br>需要用bind绑定设备与输入数据，之后计算前向forward</li>
+<li>Symbol可轻松获取任何一个节点的信息，类似一个链表读取</li>
+</ul>
+</li>
+</ul>
+<ol start="5">
+<li>LR Scheduler：定义学习率衰减策略</li>
+<li>Optimizer：优化器，决定如何更新权值参数</li>
+<li>Executor：图的前向计算与反向梯度推导</li>
+</ol>
+<ul>
+<li>类似tf.Session，当Symbol绑定executor后，当前的executor对应的图就不能再做更改了，与其他静态图框架相同</li>
+<li>用于数据并行的Executor：mxnet.executor_group.DataParallelExecutorGroup</li>
+</ul>
+<ol start="8">
+<li>Metric：查看模型训练过程指标</li>
+<li>Callback：回调函数</li>
+</ol>
+<ul>
+<li>统计模型训练速度</li>
+</ul>
+<ol start="10">
+<li>KVStore：跨设备的键值存储</li>
+<li>Module： 将前面所有的定义组合成一个模块使用</li>
+</ol>
+</li>
+<li><p><strong>4、网络可视化</strong></p>
+</li>
+<li><p><strong>5、保存于恢复模型</strong></p>
+<ol>
+<li>mx.callback.do_checkpoint()</li>
+<li>mx.model.load_checkpoint()</li>
+</ol>
+</li>
+<li><p><strong>6、显存优化</strong>：<a href="https://github.com/dmlc/mxnet-memonger" target="_blank" rel="noopener">memonger</a></p>
+</li>
+<li><p><strong>7、部署</strong>：tvm、nnvm，C++或python </p>
+</li>
+</ul>
+<h1 id="常用API"><a href="#常用API" class="headerlink" title="常用API"></a>常用API</h1><h2 id="gpu"><a href="#gpu" class="headerlink" title="gpu()"></a>gpu()</h2><h2 id="cpu"><a href="#cpu" class="headerlink" title="cpu()"></a>cpu()</h2><h2 id="symbol"><a href="#symbol" class="headerlink" title="symbol()"></a>symbol()</h2><p>符号式编程，通过mx.symbol来进行调用网络模块，可以定义：</p>
+<ol>
+<li>mx.symbol.Variable:类似tf.placeholder功能，作为一个占位符</li>
+<li>mx.symbol.Convolution</li>
+<li>mx.symbol.Activation</li>
+<li>mx.symbol.BatchNorm</li>
+</ol>
+<h2 id="Context"><a href="#Context" class="headerlink" title="Context()"></a>Context()</h2><p>通过输入设备不同来建立设备，mx.Context(‘gpu’)，其实等价于：</p>
+<ol>
+<li>mx.Context(‘gpu’) == mx.gpu()</li>
+<li>mx.Context(‘cpu’) == mx.cpu()</li>
+</ol>
+<h2 id="ctx"><a href="#ctx" class="headerlink" title="ctx()"></a>ctx()</h2><h2 id="Symbols"><a href="#Symbols" class="headerlink" title="Symbols()"></a>Symbols()</h2><h2 id="AttrScope"><a href="#AttrScope" class="headerlink" title="AttrScope()"></a>AttrScope()</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">def test_ctx_group():</span><br><span class="line">    with mx.AttrScope(ctx_group&#x3D;&#39;stage1&#39;):</span><br><span class="line">        data &#x3D; mx.symbol.Variable(&#39;data&#39;)</span><br><span class="line">        fc1  &#x3D; mx.symbol.FullyConnected(data &#x3D; data, name&#x3D;&#39;fc1&#39;, num_hidden&#x3D;128)</span><br><span class="line">        act1 &#x3D; mx.symbol.Activation(data &#x3D; fc1, name&#x3D;&#39;relu1&#39;, act_type&#x3D;&quot;relu&quot;)</span><br><span class="line"></span><br><span class="line">    set_stage1 &#x3D; set(act1.list_arguments())</span><br><span class="line">    print(list(act1.list_arguments()))</span><br><span class="line">    with mx.AttrScope(ctx_group&#x3D;&#39;stage2&#39;):</span><br><span class="line">        fc2  &#x3D; mx.symbol.FullyConnected(data &#x3D; act1, name &#x3D; &#39;fc2&#39;, num_hidden &#x3D; 64)</span><br><span class="line">        act2 &#x3D; mx.symbol.Activation(data &#x3D; fc2, name&#x3D;&#39;relu2&#39;, act_type&#x3D;&quot;relu&quot;)</span><br><span class="line">        fc3  &#x3D; mx.symbol.FullyConnected(data &#x3D; act2, name&#x3D;&#39;fc3&#39;, num_hidden&#x3D;10)</span><br><span class="line">        fc3 &#x3D; mx.symbol.BatchNorm(fc3)</span><br><span class="line">        mlp  &#x3D; mx.symbol.SoftmaxOutput(data &#x3D; fc3, name &#x3D; &#39;softmax&#39;)</span><br><span class="line"></span><br><span class="line">    set_stage2 &#x3D; set(mlp.list_arguments()) - set_stage1</span><br><span class="line">    print(list(mlp.list_arguments()))</span><br><span class="line">    print(&#39;set_stage2&#39;, set_stage2)</span><br><span class="line">    group2ctx &#x3D; &#123;</span><br><span class="line">        &#39;stage1&#39; : mx.cpu(0),</span><br><span class="line">        &#39;stage2&#39; : mx.gpu(0)</span><br><span class="line">    &#125;</span><br><span class="line">    texec &#x3D; mlp.simple_bind(mx.cpu(0),</span><br><span class="line">                            group2ctx&#x3D;group2ctx,</span><br><span class="line">                            data&#x3D;(1,200))</span><br><span class="line"></span><br><span class="line">    for arr, name in zip(texec.arg_arrays, mlp.list_arguments()):</span><br><span class="line">        if name in set_stage1:</span><br><span class="line">            assert arr.context &#x3D;&#x3D; group2ctx[&#39;stage1&#39;]</span><br><span class="line">            print(&#39;stage1&#39;, arr)</span><br><span class="line">        else:</span><br><span class="line">            assert arr.context &#x3D;&#x3D; group2ctx[&#39;stage2&#39;]</span><br><span class="line">            print(&#39;stage2&#39;, arr)</span><br></pre></td></tr></table></figure>
+
+<h2 id="建立一个网络"><a href="#建立一个网络" class="headerlink" title="建立一个网络"></a>建立一个网络</h2><p>以线性回归网络为例，其就是一个单层网络</p>
+<h3 id="mxnet定义"><a href="#mxnet定义" class="headerlink" title="mxnet定义"></a>mxnet定义</h3><ol>
+<li><p>定义输入，明确特征与标签，形状，数量</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">num_inputs &#x3D; 2</span><br><span class="line">num_examples &#x3D; 1000</span><br><span class="line">true_w&#x3D;[2, -3.4]</span><br><span class="line">true_b&#x3D;4.2</span><br><span class="line">features &#x3D; nd.random.normal(scale&#x3D;1, shape&#x3D;(num_examples, num_inputs))</span><br><span class="line">labels &#x3D; true_w[0]*features[:,0]+true_w[1]*features[:,1]+true_b</span><br><span class="line"># noise</span><br><span class="line">labels +&#x3D; nd.random.normal(scale&#x3D;1, shape&#x3D;labels.shape)</span><br></pre></td></tr></table></figure></li>
+<li><p>构建迭代器</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">def data_iter(batch_size, features, labels):</span><br><span class="line">    num_examples &#x3D; len(features)</span><br><span class="line">    indices &#x3D; list(range(num_examples))</span><br><span class="line">    random.shuffle(indices)</span><br><span class="line">    for i in range(0,num_examples,batch_size):</span><br><span class="line">        j &#x3D; nd.array(indices[i:min(i+batch_size,num_examples)])</span><br><span class="line">        yield features.take(j), labels.take(j)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>建网络</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">w &#x3D; nd.random.normal(scale&#x3D;0.01, shape&#x3D;(num_inputs, 1))</span><br><span class="line">b&#x3D;nd.zeros(shape&#x3D;(1,))</span><br><span class="line"># create gradient</span><br><span class="line">w.attach_grad()</span><br><span class="line">b.attach_grad()</span><br><span class="line"># 网络定义</span><br><span class="line">def linreg(x, w, b):</span><br><span class="line">    return nd.dot(x,w)+b</span><br><span class="line"># 损失函数定义</span><br><span class="line">def square_loss(y_hat, y):</span><br><span class="line">    return (y_hat - y.reshape(y_hat.shape))**2&#x2F;2</span><br><span class="line"># 优化器定义</span><br><span class="line">def sgd(params, lr, batch_size):</span><br><span class="line">    for param in params:</span><br><span class="line">        param[:]&#x3D;param -lr*param.grad &#x2F; batch_size</span><br></pre></td></tr></table></figure></li>
+<li><p>构建执行流程</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">lr &#x3D; 0.03</span><br><span class="line">num_epochs&#x3D;3</span><br><span class="line">net&#x3D;linreg</span><br><span class="line">loss &#x3D; square_loss</span><br><span class="line">for epoch in range(num_epochs):</span><br><span class="line">    for x,y in data_iter(batch_size, features, labels):</span><br><span class="line">        with autograd.record():</span><br><span class="line">		    # 计算当前batch的损失值，用于反向传播</span><br><span class="line">            l &#x3D; loss(net(x,w,b), y)</span><br><span class="line">		# 损失值或误差反向传播，方法嵌入在mxnet中，直接调用，相当于nd.sum(loss).backward()</span><br><span class="line">        l.backward()</span><br><span class="line">		# 优化参数</span><br><span class="line">        sgd([w,b],lr,batch_size)</span><br><span class="line">    train_l &#x3D; loss(net(features,w,b),labels)</span><br><span class="line">    print(&#39;epoch %d, loss %f&#39; %(epoch+1, train_l.mean().asnumpy()))</span><br></pre></td></tr></table></figure></li>
+<li><p>问题</p>
+<ul>
+<li>建立网络时，定义loss值为什么要y.reshape(y_hat.shape)：有可能网络预测出来的值与输入y形状不同，依赖网络定义。</li>
+<li>如果样本个数不能被batch整除，有啥影响：最后一个batch size值就会不够</li>
+</ul>
+</li>
+</ol>
+<h3 id="gluon定义"><a href="#gluon定义" class="headerlink" title="gluon定义"></a>gluon定义</h3><p>gluon实现由自己的输入类型</p>
+<ol>
+<li>定义输入，明确特征与标签，形状，数量<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">num_inputs &#x3D; 2</span><br><span class="line">num_examples &#x3D; 1000</span><br><span class="line">true_w&#x3D;[2, -3.4]</span><br><span class="line">true_b&#x3D;4.2</span><br><span class="line">features &#x3D; nd.random.normal(scale&#x3D;1, shape&#x3D;(num_examples, num_inputs))</span><br><span class="line">labels &#x3D; true_w[0]*features[:,0]+true_w[1]*features[:,1]+true_b</span><br><span class="line"># noise</span><br><span class="line">labels +&#x3D; nd.random.normal(scale&#x3D;1, shape&#x3D;labels.shape)</span><br></pre></td></tr></table></figure></li>
+<li>转换数据，创建迭代器<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># gluon</span><br><span class="line">from mxnet.gluon import data as gdata</span><br><span class="line">batch_size &#x3D; 10</span><br><span class="line">dataset &#x3D; gdata.ArrayDataset(features, labels)</span><br><span class="line">train_iter &#x3D; gdata.DataLoader(dataset, batch_size, shuffle&#x3D;True)</span><br></pre></td></tr></table></figure></li>
+<li>定义网络<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"># 1. 定义网络</span><br><span class="line">from mxnet.gluon import nn</span><br><span class="line">net &#x3D; nn.Sequential()</span><br><span class="line"># 输出1个值</span><br><span class="line">net.add(nn.Dense(1))</span><br><span class="line"># 2. 初始化网络参数</span><br><span class="line">from mxnet import init</span><br><span class="line">net.initialize(init.Normal(sigma&#x3D;0.01))</span><br><span class="line"># 3. 定义损失函数</span><br><span class="line">from mxnet.gluon import loss as gloss</span><br><span class="line">loss &#x3D; gloss.L2Loss()</span><br><span class="line"># 定义优化器，使用什么优化算法</span><br><span class="line">from mxnet import gluon</span><br><span class="line">trainer &#x3D; gluon.Trainer(net.collect_params(), &#39;sgd&#39;, &#123;&#39;learning_rate&#39;:0.03&#125;)</span><br></pre></td></tr></table></figure></li>
+<li>构建执行流程<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">num_epochs &#x3D; 3</span><br><span class="line">for epoch in range(num_epochs):</span><br><span class="line">    for x,y in train_iter:</span><br><span class="line">	    # </span><br><span class="line">        with autograd.record():</span><br><span class="line">		    # 计算batch下网络损失值</span><br><span class="line">            l &#x3D; loss(net(x), y)</span><br><span class="line">		# 反向传播，相当于nd.sum(loss).backward()</span><br><span class="line">        l.backward()</span><br><span class="line">		# 优化参数值，将前面batch size的loss进行归一化，trainer.step(batch_size)相当于除以batch size</span><br><span class="line">        trainer.step(batch_size)</span><br><span class="line">    l &#x3D; loss(net(features), labels)</span><br><span class="line">    print(&#39;epoch %d, loss %.4f&#39; %(epoch+1, l.mean().asnumpy()))</span><br></pre></td></tr></table></figure>
+可通过<code>net[0].weight.data()</code>，<code>net[0].bias.data()</code>来查看第0层的权值与偏差，<code>net[0].weight.grad()</code>来查看权值梯度值</li>
+<li>问题<ul>
+<li>如果将 l = loss(net(X), y) 替换成 l = loss(net(X), y).mean()，我们需要将 trainer.step(batch_size) 相应地改成 trainer.step(1)。这是为什么呢：因为mean已经对loss进行了平均，而trainer.step(batch_size)作用在优化参数时会除以batch_size来做平均<h1 id="Gluon"><a href="#Gluon" class="headerlink" title="Gluon"></a>Gluon</h1></li>
+</ul>
+</li>
+</ol>
+<h1 id="分布式"><a href="#分布式" class="headerlink" title="分布式"></a>分布式</h1><h1 id="Question"><a href="#Question" class="headerlink" title="Question"></a>Question</h1><ol>
+<li>问题描述<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Traceback (most recent call last):</span><br><span class="line">  File &quot;test_mxnet_model_parallel_02.py&quot;, line 37, in &lt;module&gt;</span><br><span class="line">    test_ctx_group(kv)</span><br><span class="line">  File &quot;test_mxnet_model_parallel_02.py&quot;, line 27, in test_ctx_group</span><br><span class="line">    data&#x3D;(1,200))</span><br><span class="line">  File &quot;&#x2F;usr&#x2F;local&#x2F;python3.6&#x2F;lib&#x2F;python3.6&#x2F;site-packages&#x2F;mxnet&#x2F;symbol&#x2F;symbol.py&quot;, line 1541, in simple_bind</span><br><span class="line">    ctx_map_dev_types.append(val.device_typeid)</span><br><span class="line">AttributeError: &#39;list&#39; object has no attribute &#39;device_typeid&#39;</span><br></pre></td></tr></table></figure>
+解答：bind doesn’t support multi-gpu. Use mx.mod.Module instead，代码用了simple_bind</li>
+</ol>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/introduce/">introduce</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/deeplearning/">deeplearning</a>►<a class="article-category-link" href="/categories/deeplearning/framework/">framework</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://hhwode.github.io/2020/02/18/deeplearning/mxnet/" data-title="mxnet | The Notes of HH" data-tsina="" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2020/02/19/vm/" title="vm虚拟机">
+  <strong>新一篇:</strong><br/>
+  <span>
+  vm虚拟机</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2020/02/16/NLP/"  title="NLP基础">
+ <strong>旧一篇:</strong><br/> 
+ <span>NLP基础
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="mxnet" data-thread-key="deeplearning/mxnet" data-author-key="John Doe" data-url="https://hhwode.github.io/post/deeplearning/mxnet"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo" target="_blank" rel="noopener">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp" target="_blank" rel="noopener">Tinnypp</a>.</span>
+		
+			<span>© HH</span>
+		
+	<div>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"tinnypp"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

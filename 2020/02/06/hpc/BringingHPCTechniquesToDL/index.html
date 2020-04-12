@@ -1,0 +1,380 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Bringing HPC Techniques to Deep Learning | The Notes of HH</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="John Doe">
+    
+    <meta name="description" content="这是一篇博客Bringing HPC Techniques to Deep Learning，介绍在百度使用ring all reduce技术，实现大规模使用多GPU计算能力
+Three passfirst pass列出【1】标题：Bringing HPC Techniques to Deep Le">
+    
+    
+    
+    
+    <link rel="alternative" href="/Tinnypp/atom.xml" title="The Notes of HH" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/myLogo.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/myLogo.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.svg" alt="The Notes of HH" title="The Notes of HH"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="The Notes of HH">The Notes of HH</a></h1>
+				<h2 class="blog-motto">Hold Your Horse</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="https://hhwode.github.io/">首页</a></li>
+					
+						<li><a href="https://hhwode.github.io/archives">归档</a></li>
+					
+					<li>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2020/02/06/hpc/BringingHPCTechniquesToDL/" title="Bringing HPC Techniques to Deep Learning" itemprop="url">Bringing HPC Techniques to Deep Learning</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2020-02-06T12:44:24.000Z" itemprop="datePublished">2020-02-06</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Three-pass"><span class="toc-number">1.</span> <span class="toc-text">Three pass</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#first-pass"><span class="toc-number">1.1.</span> <span class="toc-text">first pass</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#second-pass"><span class="toc-number">1.2.</span> <span class="toc-text">second pass</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#third-pass"><span class="toc-number">1.3.</span> <span class="toc-text">third pass</span></a></li></ol></li></ol>
+		</div>
+		
+		<p>这是一篇博客<a href="http://www.gibiansky.com/" target="_blank" rel="noopener">Bringing HPC Techniques to Deep Learning</a>，介绍在百度使用ring all reduce技术，实现大规模使用多GPU计算能力</p>
+<h1 id="Three-pass"><a href="#Three-pass" class="headerlink" title="Three pass"></a>Three pass</h1><h2 id="first-pass"><a href="#first-pass" class="headerlink" title="first pass"></a>first pass</h2><p><strong>列出</strong><br>【1】标题：Bringing HPC Techniques to Deep Learning，引入高可用的计算技术到深度学习，表明是提供一种解决性能的技术，训练效率<br>介绍：一些背景，自从2012年计算机视觉比赛上引入卷积神经网络起，6亿的参数在两张GPU上训练花费一周时间，到2016年32张GPU训练10亿参数的模型花费三周时间，说明1)模型越来越大，训练耗时越来越长，2)多GPU共同训练一个模型的技术越来越重要，百度SVAIL实验室实现了多GPU训练的技术<br>【2】章节标题：The Communication Problem（多个GPU不在一个服务器上，如何通信），The Ring Allreduce（GPU间通信算法），The Scatter-Reduce，The Allgather，Allreduce Communication Cost（理论上Ring Allreduce算法在通信上的耗时），Applying the Allreduce to Deep learning，conclusion，reference<br>【3】数学原理：无<br>【4】结论：ring all reduce算法有效平均梯度在多个设备上，并且比较在数据并行和同步更新上更易实现，且罗列了可用的ring all reduce开源库：<a href="https://github.com/baidu-research/baidu-allreduce" target="_blank" rel="noopener">baidu-ring all-reduce</a>，<a href="https://github.com/horovod/horovod" target="_blank" rel="noopener">Uber horovod</a><br>【5】参考文献</p>
+<ol>
+<li>ImageNet classification with deep convolutional neural networks. Advances in neural information processing systems. 2012. </li>
+<li>Exploring the limits of language modeling. arXiv preprint arXiv:1602.02410 (2016).</li>
+</ol>
+<p><strong>回答</strong><br>【1】论文类型：原型研究描述，ring all-reduce算法的实现<br>【2】相关论文：horovod<br>【3】正确性：<br>【4】贡献点：百度有开源库，Uber也有，并详细介绍了该算法的原理<br>【5】条理：针对当前背景的需要，详细介绍了一种可用的技术</p>
+<h2 id="second-pass"><a href="#second-pass" class="headerlink" title="second pass"></a>second pass</h2><p><strong>图表</strong><br>【1】基本<br>最基本的基于中心节点的PS结构，10个GPU的话，有一个GPU专门作为参数汇总与分发的节点，说明只剩9个GPU进行模型前向和后向的计算，如果带宽是1.2千兆字节的，模型3百万个参数，每个参数是float类型占4个字节，总共模型有1千兆字节，一秒只能传输一个GPU的，也就是一次迭代10个GPU耗时9秒（之后的模型都是要统计参数量，再乘以float类型的字节数就是模型总量）</p>
+<p>【2】ring all-reduce<br>ring all-reduce是一种带宽最优化的算法，以环形构建集群，每个节点只与前后相邻节点有通信，减少了PS结构中参数服务器节点的工作量，并分发到其他每个节点。<br><img src="/images/HPC/1.png" alt=""><br>该算法有两部分：</p>
+<ol>
+<li>scatter-reduce：GPU间相互交换各自块的数据，来计算本轮最终的参数结果,<strong>该部分主要是将所有GPU计算的结果进行汇总，汇总后每个GPU都有一块数据是最终的结果</strong></li>
+<li>all-gather：将最终的结果进行交换，<strong>将前面汇总后的数据分发到其他未更新的块，达到所有块都是最终的结果</strong></li>
+</ol>
+<p>【3】通信花销<br>N个GPU，发送（scatter-reduce）参数<code>N-1</code>次，接收（all-gather）参数<code>N-1</code>次，每次每个GPU传输的数据量为<code>K/N</code>，其中K表示模型参数总量，所以总的传输量为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2(N-1)·K&#x2F;N</span><br></pre></td></tr></table></figure>
+<p>而PS结构N个GPU，总次数<code>2(N-1)</code>，总传输量<code>2(N-1)K</code>，从传输数据量也能看出，ring all-reduce小于PS结构，如果K越接近带宽最大值，ring all-reduce通信耗时将远远小于PS（PS结构又是all-reduce结构）</p>
+<p><strong>相关文献背景</strong></p>
+<h2 id="third-pass"><a href="#third-pass" class="headerlink" title="third pass"></a>third pass</h2><p><strong>重现</strong></p>
+<p>名词：</p>
+<ol>
+<li>gigabytes</li>
+<li>GPUDirect RDMA</li>
+<li>Infiniband<br>良好的internet连接可以提供每秒15兆的带宽，而千兆以太网连接可以提供每秒125兆的带宽</li>
+</ol>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/framework/">framework</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/deeplearning/">deeplearning</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://hhwode.github.io/2020/02/06/hpc/BringingHPCTechniquesToDL/" data-title="Bringing HPC Techniques to Deep Learning | The Notes of HH" data-tsina="" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2020/02/07/hvd/Timeline/" title="Timeline">
+  <strong>新一篇:</strong><br/>
+  <span>
+  Timeline</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2020/02/05/hvd/Horovod/"  title="Horovod fast and easy distributed deep learning in TensorFlow">
+ <strong>旧一篇:</strong><br/> 
+ <span>Horovod fast and easy distributed deep learning in TensorFlow
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="Bringing HPC Techniques to Deep Learning" data-thread-key="hpc/BringingHPCTechniquesToDL" data-author-key="John Doe" data-url="https://hhwode.github.io/post/hpc/BringingHPCTechniquesToDL"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo" target="_blank" rel="noopener">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp" target="_blank" rel="noopener">Tinnypp</a>.</span>
+		
+			<span>© HH</span>
+		
+	<div>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"tinnypp"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

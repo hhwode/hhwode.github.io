@@ -1,0 +1,387 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Optimization for deep learning theory and algorithms | The Notes of HH</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="John Doe">
+    
+    <meta name="description" content="作者：Ruoyu Sun2019年12月21日
+Three Passfirst pass列出
+
+标题，摘要，介绍标题：Optimization for deep learning theory and algorithms摘要：介绍深度学习为什么有效，论文提供深度学习训练优化的理论，讨论1、梯度爆炸">
+    
+    
+    
+    
+    <link rel="alternative" href="/Tinnypp/atom.xml" title="The Notes of HH" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/myLogo.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/myLogo.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.svg" alt="The Notes of HH" title="The Notes of HH"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="The Notes of HH">The Notes of HH</a></h1>
+				<h2 class="blog-motto">Hold Your Horse</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="https://hhwode.github.io/">首页</a></li>
+					
+						<li><a href="https://hhwode.github.io/archives">归档</a></li>
+					
+					<li>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2020/02/10/deeplearning/Optimization for deep learning theory and algorithms/" title="Optimization for deep learning theory and algorithms" itemprop="url">Optimization for deep learning theory and algorithms</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2020-02-10T12:44:24.000Z" itemprop="datePublished">2020-02-10</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Three-Pass"><span class="toc-number">1.</span> <span class="toc-text">Three Pass</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#first-pass"><span class="toc-number">1.1.</span> <span class="toc-text">first pass</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#second-pass"><span class="toc-number">1.2.</span> <span class="toc-text">second pass</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#third-pass"><span class="toc-number">1.3.</span> <span class="toc-text">third pass</span></a></li></ol></li></ol>
+		</div>
+		
+		<p>作者：Ruoyu Sun<br>2019年12月21日</p>
+<h1 id="Three-Pass"><a href="#Three-Pass" class="headerlink" title="Three Pass"></a>Three Pass</h1><h2 id="first-pass"><a href="#first-pass" class="headerlink" title="first pass"></a>first pass</h2><p><strong>列出</strong></p>
+<ol>
+<li>标题，摘要，介绍<br>标题：Optimization for deep learning theory and algorithms<br>摘要：介绍深度学习为什么有效，论文提供深度学习训练优化的理论，讨论1、梯度爆炸与消失，光谱，有效的解决手段初始化和归一化方法；2、回归优化方法，SGD，适配梯度方法和SGD分布式法；3、研究训练存在的问题，bad local minima, mode connectivity, lottery ticket hypothesis and infinite-width analysis.</li>
+</ol>
+<p><strong>可以说是对深度学习一套理论的研究，存在什么问题，怎么解决的</strong><br>介绍：<br>在高层面看，训练有三种条件：Proper neural-net，Training algorithm，Training tricks<br>并将优化优势大致分为三部分： controlling Lipschitz constants(make convergence possible)，faster convergence， better landscape( better global solutions)<br>主要还是理论理解，何为neural-net structure<br>作者还使用分解法来解释，从ML优化分解到DL优化分解</p>
+<blockquote>
+<p>监督学习的目标是基于观察样本找到接近真实函数的函数，说直白就是找到一个可替代的解释说明，分三步走：<br>第一步是找到一个丰富的函数家族(如神经网络)，可以代表理想的函数(表示)<br>第二步是通过最小化某个损失函数来识别函数的参数(优化)<br>第三步是使用第二步中找到的函数对不可见的测试数据进行预测，产生的错误称为测试错误(泛化)<br><strong>当我们选用一个函数族作为表示时，不去关心该函数是否能将问题优化得很好</strong><br><strong>当进行分析泛化错误时，就认为已经最优化了</strong><br>分解优化问题，也是可以分三步：<br>第一步是使算法开始运行，并收敛到一个合理的解，如一个固定点(<strong>convergence</strong>)<br>第二步是使算法尽快收敛(<strong>convergence speed</strong>)<br>第三步是确保算法收敛于一个目标值较低的解(如全局最小值)(** global quality<strong>)<br>2. 章节<br>**Problem Formulation</strong>: Relation with Least Squares, Relation with Matrix Factorization<br><strong>Gradient Descent</strong>: Implementation and Basic Analysis: Computation of Gradient: Backpropagation, Basic Convergence Analysis of GD<br>Neural-net Specific Tricks: Possible Slow Convergence Due to Explosion/Vanishing, Careful Initialization, Normalization Methods, Changing Neural Architecture, Training Ultra-Deep Neural-nets<br>General Algorithms for Training Neural Networks: SGD and learning-rate schedules, Theoretical analysis of SGD, Momentum and accelerated SGD, Adaptive gradient methods: AdaGrad, RMSProp, Adam and more, Large-scale distributed computation, Other Algorithms<br>Global Optimization of Neural Networks(GON): Related areas, Empirical exploration of landscape, Mode connectivity, Model compression and lottery ticket hypothesis, Generalization and landscape, Optimization Theory for Deep Neural Networks, Research in Shallow Networks after 2012<br>Concluding Remarks<br>Acknowledgement<br>References:257条引用文献，综述确实难写</p>
+</blockquote>
+<ol start="3">
+<li>数学原理<br>SGD的数学原理：快速构建一些东西，然后得到一些反馈，根据反馈做出改变，重复此过程。目标是让产品更贴合用，让用户做出反馈，以获得设计开发出的产品与优秀的产品二者之间误差最小</li>
+<li>结论<br>论文回顾了前馈神经网络在训练时相关理论，理解理论的目的有两个：<strong>understanding and design</strong><blockquote>
+<p>understanding:理解，初始化的作用，过度参数化的认识(待理解：还有很多组件不清楚会对性能有什么影响)<br>design:设计， initialization schemes, batch normalization, Adam等使用</p>
+</blockquote>
+</li>
+<li>相关文献：<br>已读：<br>未读：<br>总共：</li>
+</ol>
+<p><strong>回答</strong></p>
+<ol>
+<li>论文类型：综述性论文，主要介绍深度学习理论，从表示、优化、泛化三方面介绍</li>
+<li>论文内容：你读过的其他论文有没有和这个相关的？文章中分析问题用的什么理论基础？</li>
+<li>正确性：结论看起来真实有效，针对理解深度学习有帮助</li>
+<li>贡献点：综述性的论文，编写难度大，并且资料收集和理解都需要很大精力</li>
+<li>条理：条理清晰，从现状、基础到原理分解解释做得足够说明</li>
+<li>是否继续：建议继续，能进一步加深理解，为后续无论是具体网络分析还是实验都有帮助，最好打印出来</li>
+</ol>
+<h2 id="second-pass"><a href="#second-pass" class="headerlink" title="second pass"></a>second pass</h2><p>章节：2 problem formulation<br>监督问题就是在找x, y之间的映射关系，对于分类问题就是整型向量或标量值，对于回归问题就是实值向量或标量值，两者可以认为就是函数嵌套。<br><strong>图表</strong></p>
+<p><strong>相关文献</strong></p>
+<h2 id="third-pass"><a href="#third-pass" class="headerlink" title="third pass"></a>third pass</h2><p><strong>重现</strong></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/introduce/">introduce</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/deeplearning/">deeplearning</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://hhwode.github.io/2020/02/10/deeplearning/Optimization%20for%20deep%20learning%20theory%20and%20algorithms/" data-title="Optimization for deep learning theory and algorithms | The Notes of HH" data-tsina="" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2020/02/11/deeplearning/OpenMPI Goals Concept and Design of a Next Generation MPI Implementation/" title="Open MPI Goals, Concept, and Design of a Next Generation MPI Implementation">
+  <strong>新一篇:</strong><br/>
+  <span>
+  Open MPI Goals, Concept, and Design of a Next Generation MPI Implementation</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2020/02/09/deeplearning/One weird trick for parallelizing convolutional neural networks/"  title="One weird trick for parallelizing convolutional neural networks">
+ <strong>旧一篇:</strong><br/> 
+ <span>One weird trick for parallelizing convolutional neural networks
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="Optimization for deep learning theory and algorithms" data-thread-key="deeplearning/Optimization for deep learning theory and algorithms" data-author-key="John Doe" data-url="https://hhwode.github.io/post/deeplearning/Optimization for deep learning theory and algorithms"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo" target="_blank" rel="noopener">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp" target="_blank" rel="noopener">Tinnypp</a>.</span>
+		
+			<span>© HH</span>
+		
+	<div>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"tinnypp"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

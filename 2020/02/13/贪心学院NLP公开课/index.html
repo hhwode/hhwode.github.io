@@ -1,0 +1,414 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>贪心学院NLP公开课 | The Notes of HH</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="John Doe">
+    
+    <meta name="description" content="#2020-02-13介绍常用技术：信息抽取、知识图谱、对话系统、智能问答 热门方向，这几年
+词向量与ELMo模型 研究词的表示方法，词向量有两个阶段：
+
+第一阶段：CBOW，SkipGram，一个单词对应一个词向量
+第二阶段：ELMo，GPT，Bert，XLNet，一个单词对应多个词向量【贪心学院">
+    
+    
+    
+    
+    <link rel="alternative" href="/Tinnypp/atom.xml" title="The Notes of HH" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/myLogo.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/myLogo.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.svg" alt="The Notes of HH" title="The Notes of HH"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="The Notes of HH">The Notes of HH</a></h1>
+				<h2 class="blog-motto">Hold Your Horse</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="https://hhwode.github.io/">首页</a></li>
+					
+						<li><a href="https://hhwode.github.io/archives">归档</a></li>
+					
+					<li>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2020/02/13/贪心学院NLP公开课/" title="贪心学院NLP公开课" itemprop="url">贪心学院NLP公开课</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2020-02-13T12:44:24.000Z" itemprop="datePublished">2020-02-13</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#2020-02-13"><span class="toc-number">1.</span> <span class="toc-text">#2020-02-13</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#介绍"><span class="toc-number">2.</span> <span class="toc-text">介绍</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#词向量与ELMo模型"><span class="toc-number">3.</span> <span class="toc-text">词向量与ELMo模型</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#基础回顾（词向量，语言模型）"><span class="toc-number">4.</span> <span class="toc-text">基础回顾（词向量，语言模型）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#NLP核心：学习不同语境下的语义表示"><span class="toc-number">5.</span> <span class="toc-text">NLP核心：学习不同语境下的语义表示</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#基于LSTM的词向量学习"><span class="toc-number">6.</span> <span class="toc-text">基于LSTM的词向量学习</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#深度学习中的层次表示以及Deep-BI-LSTM"><span class="toc-number">7.</span> <span class="toc-text">深度学习中的层次表示以及Deep BI-LSTM</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ELMo模型"><span class="toc-number">8.</span> <span class="toc-text">ELMo模型</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#总结"><span class="toc-number">9.</span> <span class="toc-text">总结</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#2020-02-17"><span class="toc-number">10.</span> <span class="toc-text">#2020-02-17</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Attention-amp-Transformer"><span class="toc-number">11.</span> <span class="toc-text">Attention &amp; Transformer</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#null"><span class="toc-number">11.1.</span> <span class="toc-text"></span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#2020-02-19"><span class="toc-number">12.</span> <span class="toc-text">#2020-02-19</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#BERT模型"><span class="toc-number">13.</span> <span class="toc-text">BERT模型</span></a></li></ol>
+		</div>
+		
+		<h1 id="2020-02-13"><a href="#2020-02-13" class="headerlink" title="#2020-02-13"></a>#2020-02-13</h1><h1 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h1><p>常用技术：<br>信息抽取、知识图谱、对话系统、智能问答 热门方向，这几年</p>
+<h1 id="词向量与ELMo模型"><a href="#词向量与ELMo模型" class="headerlink" title="词向量与ELMo模型"></a>词向量与ELMo模型</h1><p> 研究词的表示方法，词向量有两个阶段：</p>
+<ol>
+<li>第一阶段：CBOW，SkipGram，一个单词对应一个词向量</li>
+<li>第二阶段：ELMo，GPT，Bert，XLNet，一个单词对应多个词向量<br>【贪心学院的NLP技术分享，直播因为人员在4000多人崩溃了，等待通知】</li>
+</ol>
+<p>【2020-02-15 B站直播李文哲老师<a href="https://live.bilibili.com/11869202】" target="_blank" rel="noopener">https://live.bilibili.com/11869202】</a></p>
+<h1 id="基础回顾（词向量，语言模型）"><a href="#基础回顾（词向量，语言模型）" class="headerlink" title="基础回顾（词向量，语言模型）"></a>基础回顾（词向量，语言模型）</h1><p>深度学习使用更少的参数来表示</p>
+<ol>
+<li><p>独热编码能否表示单词相似度</p>
+</li>
+<li><p>语言模型：对于句子的计算<br>相关知识点：</p>
+<ol>
+<li>Chain Rule，Markov Assumption</li>
+<li>Unigram，Bigram，Ngram</li>
+<li>Add-one smoothing，Good-turning Smoothing</li>
+<li>Perplexity</li>
+</ol>
+</li>
+<li><p>基于分布式表示模型总览<br><img src="'%E5%88%86%E5%B8%83%E5%BC%8F%E8%A1%A8%E7%A4%BA%E6%A8%A1%E5%9E%8B%E6%80%BB%E8%A7%88'" alt=""></p>
+<ol>
+<li>Global vs Local<br>矩阵分解是global方法，从全局进行，优势：从全局考虑，信息量多，劣势：计算量大<br>SkipGram是local方法，每次训练基于窗口式，优势：随时添加数据，劣势：无全局信息</li>
+<li>Local又分基于LM vs 非LM<br>SkipGram是非LM<br>LM就是可写出目标函数的，因为有上下联系</li>
+</ol>
+</li>
+<li><p>学习路径<br><img src="%22%E5%AD%A6%E4%B9%A0%E8%B7%AF%E5%BE%84%22" alt=""></p>
+</li>
+</ol>
+<h1 id="NLP核心：学习不同语境下的语义表示"><a href="#NLP核心：学习不同语境下的语义表示" class="headerlink" title="NLP核心：学习不同语境下的语义表示"></a>NLP核心：学习不同语境下的语义表示</h1><p>基于LM的方法词有前后顺序依赖，一般用2nd order Markov Assumption</p>
+<ol>
+<li><p>基于非语言模型的方法：SkipGram、CBOW</p>
+<ol>
+<li>SkipGram：</li>
+</ol>
+</li>
+<li><p>基于语言模型的方法：NNLM</p>
+</li>
+</ol>
+<p>以上两类方法训练的词向量只是固定的词向量，一个词对应一个词向量</p>
+<p>解决问题：对于一个单词依据上下文有不同的词向量<br>一种解决方案：ELMo<br>核心思想：<br>    - 基于语言模型的训练：使用LSTM作为基石<br>    - 启发来自深度学习中的层次表示(Hierarchical Representation)</p>
+<h1 id="基于LSTM的词向量学习"><a href="#基于LSTM的词向量学习" class="headerlink" title="基于LSTM的词向量学习"></a>基于LSTM的词向量学习</h1><p>单向LSTM=NNLM<br>双向LSTM=SkipGram/CBOW</p>
+<h1 id="深度学习中的层次表示以及Deep-BI-LSTM"><a href="#深度学习中的层次表示以及Deep-BI-LSTM" class="headerlink" title="深度学习中的层次表示以及Deep BI-LSTM"></a>深度学习中的层次表示以及Deep BI-LSTM</h1><p>层次表示：<br>就是网络层次结构，一层学一层特征，单层没有含义，但所有层合起来就表示这个样本</p>
+<h1 id="ELMo模型"><a href="#ELMo模型" class="headerlink" title="ELMo模型"></a>ELMo模型</h1><p>为什么ELMo要使用Deep BI-LSTM</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><h1 id="2020-02-17"><a href="#2020-02-17" class="headerlink" title="#2020-02-17"></a>#2020-02-17</h1><h1 id="Attention-amp-Transformer"><a href="#Attention-amp-Transformer" class="headerlink" title="Attention &amp; Transformer"></a>Attention &amp; Transformer</h1><h2 id=""><a href="#" class="headerlink" title=""></a></h2><h1 id="2020-02-19"><a href="#2020-02-19" class="headerlink" title="#2020-02-19"></a>#2020-02-19</h1><h1 id="BERT模型"><a href="#BERT模型" class="headerlink" title="BERT模型"></a>BERT模型</h1><p>Polysemous words：一词多义</p>
+<p>LSTM：训练是迭代的，串行的<br>Transformer：训练时并行的，使用位置嵌入来帮助</p>
+<p>Transformer核心组成：</p>
+<ol>
+<li>self-Attention</li>
+<li>Layer Norm</li>
+<li>Skip Connection</li>
+<li>Forward Network</li>
+<li>Positional Encoding</li>
+</ol>
+<p>BERT: Bidirectional Encoder Representation from Transformers<br>pre-training model + fine-tuning</p>
+<p>BERT输入、组成，都是有其理由的<br>由完形填空启发，</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/introduce/">introduce</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/deeplearning/">deeplearning</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://hhwode.github.io/2020/02/13/%E8%B4%AA%E5%BF%83%E5%AD%A6%E9%99%A2NLP%E5%85%AC%E5%BC%80%E8%AF%BE/" data-title="贪心学院NLP公开课 | The Notes of HH" data-tsina="" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2020/02/14/diary/Dairy/" title="Dairy">
+  <strong>新一篇:</strong><br/>
+  <span>
+  Dairy</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2020/02/13/deeplearning/Performance Power and Scalability Analysis of the Horovod Implementation od the CANDLE NT3 Benchmark on the Cray XC40 Theta/"  title="Performance Power and Scalability Analysis of the Horovod Implementation od the CANDLE NT3 Benchmark on the Cray XC40 Theta">
+ <strong>旧一篇:</strong><br/> 
+ <span>Performance Power and Scalability Analysis of the Horovod Implementation od the CANDLE NT3 Benchmark on the Cray XC40 Theta
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="贪心学院NLP公开课" data-thread-key="贪心学院NLP公开课" data-author-key="John Doe" data-url="https://hhwode.github.io/post/贪心学院NLP公开课"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo" target="_blank" rel="noopener">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp" target="_blank" rel="noopener">Tinnypp</a>.</span>
+		
+			<span>© HH</span>
+		
+	<div>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"tinnypp"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

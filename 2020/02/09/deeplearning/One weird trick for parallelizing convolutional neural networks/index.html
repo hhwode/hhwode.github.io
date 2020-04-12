@@ -1,0 +1,384 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>One weird trick for parallelizing convolutional neural networks | The Notes of HH</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="John Doe">
+    
+    <meta name="description" content="该论文是2014年google发表的一篇文章，作者为Alex Krizhevsky大牛
+Three pass明确研究背景，存在什么问题，基于什么假设前提下，使用什么方法，实验结果如何，得出什么结论
+first pass列出
+
+标题，摘要，介绍（背景，方法，结果）标题：One weird trick ">
+    
+    
+    
+    
+    <link rel="alternative" href="/Tinnypp/atom.xml" title="The Notes of HH" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/myLogo.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/myLogo.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.svg" alt="The Notes of HH" title="The Notes of HH"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="The Notes of HH">The Notes of HH</a></h1>
+				<h2 class="blog-motto">Hold Your Horse</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="https://hhwode.github.io/">首页</a></li>
+					
+						<li><a href="https://hhwode.github.io/archives">归档</a></li>
+					
+					<li>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2020/02/09/deeplearning/One weird trick for parallelizing convolutional neural networks/" title="One weird trick for parallelizing convolutional neural networks" itemprop="url">One weird trick for parallelizing convolutional neural networks</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2020-02-09T12:44:24.000Z" itemprop="datePublished">2020-02-09</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Three-pass"><span class="toc-number">1.</span> <span class="toc-text">Three pass</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#first-pass"><span class="toc-number">1.1.</span> <span class="toc-text">first pass</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#second-pass"><span class="toc-number">1.2.</span> <span class="toc-text">second pass</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#third-pass"><span class="toc-number">1.3.</span> <span class="toc-text">third pass</span></a></li></ol></li></ol>
+		</div>
+		
+		<p>该论文是2014年google发表的一篇文章，作者为Alex Krizhevsky大牛</p>
+<h1 id="Three-pass"><a href="#Three-pass" class="headerlink" title="Three pass"></a>Three pass</h1><p>明确研究背景，<br>存在什么问题，<br>基于什么<strong>假设前提</strong>下，使用什么方法，<br>实验结果如何，得出什么结论</p>
+<h2 id="first-pass"><a href="#first-pass" class="headerlink" title="first pass"></a>first pass</h2><p><strong>列出</strong></p>
+<ol>
+<li>标题，摘要，介绍（背景，方法，结果）<br>标题：One weird trick for parallelizing convolutional neural networks，卷积神经网络分布式计算<br>摘要：作者提出一种多GPU训练卷积神经网络的方法，效果比现有方法都好<br>介绍：作者已经SGD来训练卷积网络，并提出两种算法：同步SGD，非SGD算法，只是说如何训</li>
+<li>章节<blockquote>
+<p>Existing approaches<br>Some observations<br>The proposed algorithm:Weight synchronization, Variable batch size<br>Experiments:Results<br>Comparisons to other work on parallel convolutional neural network training<br>Other work on parallel neural network training<br>Conclusion<br>References</p>
+</blockquote>
+</li>
+<li>数学原理<br>什么数学原理呢，讲的类似对分布式SGD的一些改变，已达到相同或更好的效果，与输入batch size等信息相联系<br>基本还是SGD的数学原理改进</li>
+<li>结论<br>不需要适配多GPU，只是提到batch增大时的影响，对其如何构建卷积网络的分布式还是有看头的</li>
+<li>文献<br>相关：<br>未阅读：<br>已阅读：</li>
+</ol>
+<p><strong>回答</strong></p>
+<ol>
+<li>论文类型：技术实验论文</li>
+<li>上下文关联：分布式，多GPU，batch size增大对收敛影响</li>
+<li>正确性：多GPU同步训练就是增大了batch size，对SGD有何影响进行理论和实验说明</li>
+<li>贡献点：可以帮助理解SGD如何同步，有哪些因素影响在分布式下</li>
+<li>条理：清晰，介绍了现存的分布式方法</li>
+<li>是否继续：可以继续</li>
+</ol>
+<h2 id="second-pass"><a href="#second-pass" class="headerlink" title="second pass"></a>second pass</h2><p>（卷积网络：卷积部分计算量大(90<del>95%)，但参数少(5%)；全连接部分计算量少(5</del>10%)，但参数多(95%)）<br>这是作者观察的结果，所以针对卷积网络不同部分进行不同类型的并行，卷积部分用数据并行，全连接部分用模型并行，这也是作者主要实验手段<br><strong>图表</strong></p>
+<p><strong>相关文献</strong></p>
+<h2 id="third-pass"><a href="#third-pass" class="headerlink" title="third pass"></a>third pass</h2><p><strong>重现</strong></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/introduce/">introduce</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/deeplearning/">deeplearning</a>►<a class="article-category-link" href="/categories/deeplearning/distributedTraining/">distributedTraining</a>
+</div>
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://hhwode.github.io/2020/02/09/deeplearning/One%20weird%20trick%20for%20parallelizing%20convolutional%20neural%20networks/" data-title="One weird trick for parallelizing convolutional neural networks | The Notes of HH" data-tsina="" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2020/02/10/deeplearning/Optimization for deep learning theory and algorithms/" title="Optimization for deep learning theory and algorithms">
+  <strong>新一篇:</strong><br/>
+  <span>
+  Optimization for deep learning theory and algorithms</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2020/02/08/deeplearning/Large Scale Distributed Deep Network/"  title="Large Scale Distributed Deep Networks">
+ <strong>旧一篇:</strong><br/> 
+ <span>Large Scale Distributed Deep Networks
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="One weird trick for parallelizing convolutional neural networks" data-thread-key="deeplearning/One weird trick for parallelizing convolutional neural networks" data-author-key="John Doe" data-url="https://hhwode.github.io/post/deeplearning/One weird trick for parallelizing convolutional neural networks"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo" target="_blank" rel="noopener">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp" target="_blank" rel="noopener">Tinnypp</a>.</span>
+		
+			<span>© HH</span>
+		
+	<div>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"tinnypp"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>

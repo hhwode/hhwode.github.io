@@ -1,0 +1,386 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Gradient Descent | The Notes of HH</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="John Doe">
+    
+    <meta name="description" content="模仿都是参照原品，完成一次模仿后与原品对比，查看两者之间的误差程度，重复操作，直到模仿品与原品误差最小，才会将模仿品拿出来把玩，这个使自己创造出的与原品进行误差最小化的思想与梯度下降法思想类似。
+1 目标机器学习说到底，就是假设模型类型已找出，并找一个目标函数，一直优化到最小值，然后所求参数就是我们">
+    
+    
+    
+    
+    <link rel="alternative" href="/Tinnypp/atom.xml" title="The Notes of HH" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/myLogo.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/myLogo.png">
+    
+
+  
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    
+  
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?d182ed77fc48758bf45a33835ee35745";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+      <script type="text/javascript">
+  (function(w,d,t,u,n,s,e){w['SwiftypeObject']=n;w[n]=w[n]||function(){
+  (w[n].q=w[n].q||[]).push(arguments);};s=d.createElement(t);
+  e=d.getElementsByTagName(t)[0];s.async=1;s.src=u;e.parentNode.insertBefore(s,e);
+  })(window,document,'script','//s.swiftypecdn.com/install/v1/st.js','_st');
+
+  _st('install','.............Add your swiftype userID...............');
+</script>
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.svg" alt="The Notes of HH" title="The Notes of HH"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="The Notes of HH">The Notes of HH</a></h1>
+				<h2 class="blog-motto">Hold Your Horse</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+                    <ul>
+					 
+						<li><a href="https://hhwode.github.io/">首页</a></li>
+					
+						<li><a href="https://hhwode.github.io/archives">归档</a></li>
+					
+					<li>
+					
+					</li>
+                <!--<li><div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div></li>-->
+
+				</ul>
+			</nav>	
+</div>
+    </header>
+    <div id="container" class="clearfix">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2020/03/01/algorithm/gradientDescent/" title="Gradient Descent" itemprop="url">Gradient Descent</a>
+  </h1>
+  <p class="article-time">
+    <time datetime="2020-02-29T16:00:00.000Z" itemprop="datePublished">2020-03-01</time>
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title"></strong>
+		<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-目标"><span class="toc-number">1.</span> <span class="toc-text">1 目标</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-求解"><span class="toc-number">2.</span> <span class="toc-text">2 求解</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-例子"><span class="toc-number">3.</span> <span class="toc-text">3 例子</span></a></li></ol>
+		</div>
+		
+		<p>模仿都是参照原品，完成一次模仿后与原品对比，查看两者之间的误差程度，重复操作，直到模仿品与原品误差最小，才会将模仿品拿出来把玩，这个使自己创造出的与原品进行误差最小化的思想与梯度下降法思想类似。</p>
+<h2 id="1-目标"><a href="#1-目标" class="headerlink" title="1 目标"></a>1 目标</h2><p>机器学习说到底，就是假设模型类型已找出，并找一个目标函数，一直优化到最小值，然后所求参数就是我们所需，将参数带回模型中就是求取到的模型。</p>
+<p>以线性回归为例，假设只从一个维度来观察样本数据，即只有一维特征，可以假设模型类型是线性类型、指数类型等，如<br>$$ Y=wx+b $$<br>或者<br>$$ Y=wx^2+b $$<br>诸如此类的模型，这里选用最简单的<code>Y=wx+b</code>。</p>
+<p>我们能获取到的就是观察值，比如<code>x=1</code>时<code>Y</code>等于多少这类观察值，既有特征，又有结果，只是不知道是什么模型导致出现这类结果的。比如想知道重力加速度是多少，我们能知道释放物体的高度（特征），可以知道物体到达地面的时间（观察真实值），这样一组数据要多少可以实验多少，用观察值来确定加速度（参数），就是机器学习适用范围。</p>
+<p>前面说了这么多，汇总就是一句话，使找到的模型输出值与观察真实值误差越小越好（误差就是<code>观察真实值-模型输出值</code>），一模一样就是找到了真正的模型。将结果汇总为公式如下：<br>$$ Target = \sum_{r=1}^n(y^{‘}-y). $$<br>因<code>y&#39;</code>与<code>y</code>有大小之分，两者的差值会有正负，但观察到的每个样本都是相互独立的，此处的正负值会将样本间联系起来，此种情况不是我们需要的，所以一般会写出绝对值形式或者平方形式，以去除掉每个样本计算误差的正负号。此时误差可以变成如下形式<br>$$ Target = \sum_{r=1}^n|y^{‘}-y| ;\quad  or ;\quad Target = \sum_{r=1}^n(y^{‘}-y)^2. $$<br>绝对值在某些情况下比较适用，但其有正负之分，<strong>不利于计算</strong>。一般适用平方项，<strong>因其计算容易，并且还存在导数</strong>。到此，我们找到了需要优化的目标。<br>$$ Target = \sum_{r=1}^n(y^{‘}-y)^2. $$<br>该目标也叫成本函数（Cost Function），是整个训练集上误差的平均值；还有一个是损失函数（Loss Function），是针对单个训练示例的误差计算。</p>
+<h2 id="2-求解"><a href="#2-求解" class="headerlink" title="2 求解"></a>2 求解</h2><p>前面找到了需要优化得目标，但如何求解到能是目标最优化的参数呢？这就是梯度下降法（gradient descent），通过找<strong>哪条路</strong>和<strong>走多远</strong>来到底最小值处。</p>
+<p>梯度下降法不是闭式解，只是通过一步步逼近最优点的近似解。如下公式，每一步都是以 $\alpha$ 倍的梯度来对参数进行惩罚。<br>$$ \theta^1 = \theta^0-\alpha\Delta J(\theta). $$</p>
+<h2 id="3-例子"><a href="#3-例子" class="headerlink" title="3 例子"></a>3 例子</h2><p>以线性回归为例，只有一个特征，为了方便可视化，针对pytorch编程，可以认为分6步走：</p>
+<ul>
+<li><ol>
+<li><strong>获取到观察到的数据</strong></li>
+</ol>
+</li>
+<li><ol start="2">
+<li><strong>建立网络</strong></li>
+</ol>
+</li>
+<li><ol start="3">
+<li><strong>确定成本函数cost function</strong></li>
+</ol>
+</li>
+<li><ol start="4">
+<li><strong>确定优化器</strong></li>
+</ol>
+</li>
+<li><ol start="5">
+<li><strong>训练</strong></li>
+</ol>
+</li>
+<li><ol start="6">
+<li><strong>评估</strong></li>
+</ol>
+<p>如下是pytorch代码展示。</p>
+</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">from</span> torch.utils.data <span class="keyword">import</span> Dataset, DataLoader, TensorDataset</span><br><span class="line"><span class="keyword">from</span> torch <span class="keyword">import</span> nn</span><br><span class="line"><span class="keyword">from</span> torch <span class="keyword">import</span> optim</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="comment"># 1、获取到观察到的数据</span></span><br><span class="line">x = torch.randn((<span class="number">100</span>, <span class="number">1</span>), dtype=torch.float32, requires_grad=<span class="literal">True</span>)</span><br><span class="line">y = <span class="number">3.13</span> * x + <span class="number">0.01159</span></span><br><span class="line">x = x + torch.normal(<span class="number">0</span>, <span class="number">0.1</span>, (<span class="number">100</span>, <span class="number">1</span>), dtype=torch.float32)</span><br><span class="line"></span><br><span class="line">train_loader = DataLoader(dataset=TensorDataset(x, y),</span><br><span class="line">                          batch_size=<span class="number">5</span>,</span><br><span class="line">                          shuffle=<span class="literal">False</span>)</span><br><span class="line"><span class="comment"># 2、建立网络</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Net</span><span class="params">(nn.Module)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></span><br><span class="line">        super(Net, self).__init__()</span><br><span class="line">        self.net = nn.Linear(<span class="number">1</span>, <span class="number">1</span>, bias=<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">forward</span><span class="params">(self, input_features)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> self.net(input_features)</span><br><span class="line"><span class="comment"># torch的网络更像定义一个函数，指定输入，给我输出结果即可，不关心里面的其他操作</span></span><br><span class="line">model = Net().to(<span class="string">"cuda"</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3、确定成本函数cost function</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">mean_error</span><span class="params">(in_tensor, out_tensor)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> torch.pow((in_tensor - out_tensor), <span class="number">2</span>).sum() / in_tensor.size()[<span class="number">0</span>]</span><br><span class="line"><span class="comment"># loss = nn.MSELoss()</span></span><br><span class="line">loss = mean_error</span><br><span class="line"><span class="comment"># print(x.size()[0])</span></span><br><span class="line"><span class="comment"># 4、确定优化器</span></span><br><span class="line">optimizer = optim.SGD(model.parameters(), lr=<span class="number">0.015</span>)</span><br><span class="line"><span class="comment"># 5、训练</span></span><br><span class="line"><span class="keyword">for</span> epoch <span class="keyword">in</span> range(<span class="number">100</span>):</span><br><span class="line">    <span class="keyword">for</span> batch_idx, (features, labels) <span class="keyword">in</span> enumerate(train_loader):</span><br><span class="line">        optimizer.zero_grad()</span><br><span class="line">        output = model(features.to(<span class="string">"cuda"</span>))</span><br><span class="line">        loss_output = loss(output, labels.to(<span class="string">"cuda"</span>))</span><br><span class="line">        <span class="comment"># 从loss往前进行传播</span></span><br><span class="line">        loss_output.backward(retain_graph=<span class="literal">True</span>)</span><br><span class="line">        optimizer.step()</span><br><span class="line">    print(<span class="string">"epoch"</span>, epoch, <span class="string">"loss"</span>, loss_output.cpu().data.numpy())</span><br><span class="line"><span class="keyword">for</span> param <span class="keyword">in</span> model.cpu().parameters():</span><br><span class="line">    print(type(param.data), param.size(), param.detach().numpy())</span><br><span class="line"><span class="comment"># 6、评估</span></span><br><span class="line">result = []</span><br><span class="line"><span class="keyword">for</span> features, labels <span class="keyword">in</span> train_loader:</span><br><span class="line">    output = model(features)</span><br><span class="line">    result.extend(output.cpu().detach().numpy())</span><br><span class="line">    <span class="comment"># print(output.data.numpy())</span></span><br><span class="line">result = np.asarray(result)</span><br><span class="line"><span class="comment"># print('result', result)</span></span><br><span class="line"><span class="comment"># print(result.shape)</span></span><br><span class="line">raw_x = x.detach().numpy()</span><br><span class="line"><span class="comment"># print(raw_x)</span></span><br><span class="line"><span class="comment"># print(raw_x.shape)</span></span><br><span class="line"><span class="comment"># draw</span></span><br><span class="line"><span class="comment"># print(y.detach().numpy().shape)</span></span><br><span class="line">plt.scatter(raw_x[:, <span class="number">0</span>], y.detach().numpy(), c=<span class="string">'r'</span>)</span><br><span class="line">plt.scatter(raw_x[:, <span class="number">0</span>], result, c=<span class="string">'b'</span>)</span><br><span class="line">plt.plot(raw_x[:, <span class="number">0</span>], result)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
+
+<p>给特征随机加入均值为0，方差为0.1的噪声，真实模型的参数为<code>w=3.13</code>, <code>b=0.01159</code>，训练100个epoch时的最优参数为<code>w=3.1186929</code>, <code>b=0.00647835</code>，与真实模型参数误差较小。</p>
+<p>如下图，红色为真实<code>x,y</code>对应的点，蓝色与直线为预测出来的<code>x,y</code>对应点，基本符合，结合简单即最优的策略，找出来的模型是可以实际使用。</p>
+<p><img src="/images/algorithm/gd/1.png" alt="" title="result"></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="https://hhwode.github.io/2020/03/01/algorithm/gradientDescent/" data-title="Gradient Descent | The Notes of HH" data-tsina="" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2020/03/03/deeplearning/pytorch_rpc/" title="PyTorch RPC">
+  <strong>新一篇:</strong><br/>
+  <span>
+  PyTorch RPC</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2020/02/26/hpc/OnTheDesignOfaDemoForExhibitingrCUDA/"  title="On the Design of a Demo for Exhibiting rCUDA">
+ <strong>旧一篇:</strong><br/> 
+ <span>On the Design of a Demo for Exhibiting rCUDA
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	
+	<div class="ds-thread" data-title="Gradient Descent" data-thread-key="algorithm/gradientDescent" data-author-key="John Doe" data-url="https://hhwode.github.io/post/algorithm/gradientDescent"></div>
+	
+</section>
+
+
+</div>  
+    </div>
+    <footer><div id="footer" >
+	<div class="copyright">
+		<span>Powered by <a href="https://github.com/hexojs/hexo" target="_blank" rel="noopener">Hexo</a> and theme by 
+		<a href="https://github.com/levonlin/Tinnypp" target="_blank" rel="noopener">Tinnypp</a>.</span>
+		
+			<span>© HH</span>
+		
+	<div>
+</div></footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  //back to top
+  function backToTop(){
+    var buttonHTML = $("<a href=\"#top\" id=\"back-top\">" + "<span>Back to Top</span></a>");
+    buttonHTML.appendTo($("body"));
+    var buttonToTop = $("#back-top");
+    // hide #back-top first
+    buttonToTop.hide();
+
+    // fade in #back-top
+    $(function() {
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 200) {
+                buttonToTop.fadeIn();
+            } else {
+                buttonToTop.fadeOut();
+            }
+        });
+        // scroll body to 0px on click
+        buttonToTop.click(function() {
+            $('body,html').animate({
+                scrollTop: 0
+            }, 800);
+            return false;
+        });
+    });
+  }
+  backToTop();
+
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      ta = $('#toc.toc-aside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+        
+    }
+  });
+
+  var show = true;
+  c.click(function(){
+    if(show == true){
+        a.addClass('fadeOut').css('display', 'none');
+        ta.css('display', 'block').addClass('fadeIn');
+        m.addClass('moveMain');  
+    }else{
+        a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');     
+        ta.css('display', 'none'); 
+        m.removeClass('moveMain');
+        $('#toc.toc-aside').css('display', 'none');
+    }
+    show = !show;
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,240-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"tinnypp"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';    //change to ds.src = '/js/embed.js'; to add useragent for duoshuo
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+<script type="text/javascript">
+  function footerPosition() {
+    var contentHeight = document.documentElement.scrollHeight,
+        winHeight = window.innerHeight;
+    if(contentHeight <= winHeight) {
+      $('footer').addClass('fixed-bottom');
+    } else {
+      $('footer').removeClass('fixed-bottom');
+    }
+  }
+  footerPosition();
+  $(window).resize(footerPosition);
+</script>
+
+
+  </body>
+</html>
